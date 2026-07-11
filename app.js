@@ -487,7 +487,13 @@ function applyFooterRecords() {
 applyFooterRecords();
 
 let activeFilter = "all";
-let currentDayWidth = Number(elements.zoomRange.value);
+const initialCssDayWidth = Number.parseFloat(
+  window.getComputedStyle(document.documentElement).getPropertyValue("--day-width"),
+);
+let currentDayWidth = Number.isFinite(initialCssDayWidth)
+  ? initialCssDayWidth
+  : Number(elements.zoomRange.value);
+elements.zoomRange.value = String(currentDayWidth);
 let lastAgendaSignature = "";
 
 const beijingDateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -1113,7 +1119,7 @@ function setupDragScroll() {
   let startX = 0;
   let startScrollLeft = 0;
   elements.timelineScroll.addEventListener("pointerdown", (event) => {
-    if (event.target.closest("button")) return;
+    if (event.pointerType !== "mouse" || event.button !== 0 || event.target.closest("button")) return;
     pointerDown = true;
     startX = event.clientX;
     startScrollLeft = elements.timelineScroll.scrollLeft;
@@ -1130,6 +1136,18 @@ function setupDragScroll() {
   };
   elements.timelineScroll.addEventListener("pointerup", stopDragging);
   elements.timelineScroll.addEventListener("pointercancel", stopDragging);
+
+  let resizeFrame = 0;
+  const refreshTimelineViewport = () => {
+    if (resizeFrame) return;
+    resizeFrame = window.requestAnimationFrame(() => {
+      resizeFrame = 0;
+      scheduleVisibleEventContent();
+      updatePinnedVersionFlags();
+      updateArsenalViewportLayout();
+    });
+  };
+  window.addEventListener("resize", refreshTimelineViewport, { passive: true });
 }
 
 function setupTheme() {

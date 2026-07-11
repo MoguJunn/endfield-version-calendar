@@ -2090,6 +2090,178 @@ footer,
   }
 }
 
+/* Mobile interaction and narrow-screen layout refinements. */
+.timeline-scroll {
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.event-bar,
+.event-update-pin {
+  touch-action: manipulation;
+}
+
+.event-dialog {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.event-dialog p,
+.event-dialog strong,
+.event-dialog span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .brand,
+  .topbar-actions,
+  .project-links {
+    min-width: 0;
+  }
+
+  .brand > span:not(.brand-mark),
+  .sync-state {
+    display: none;
+  }
+
+  .topbar-actions {
+    gap: 8px;
+  }
+
+  .project-links {
+    flex: 1 1 auto;
+  }
+
+  .project-links a {
+    min-width: 0;
+    flex: 1 1 0;
+    padding-inline: 8px;
+    overflow: hidden;
+  }
+
+  .project-links a strong,
+  .project-links a span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar-toolbar,
+  .view-actions {
+    width: 100%;
+  }
+
+  .filters,
+  .version-switcher {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .view-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .zoom-control {
+    display: flex;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .zoom-label {
+    flex: 0 0 auto;
+    font-size: 11px;
+  }
+
+  .zoom-shortcut {
+    display: none;
+  }
+
+  .zoom-control input {
+    width: 100%;
+    min-width: 84px;
+  }
+
+  .toolbar-button,
+  .filter-button,
+  .version-button {
+    min-height: 42px;
+  }
+
+  .event-dialog {
+    width: calc(100% - 24px);
+    max-width: none;
+    padding: 24px 20px 22px;
+  }
+
+  .dialog-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .footer-records {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar {
+    gap: 6px;
+  }
+
+  .topbar-actions,
+  .project-links {
+    gap: 6px;
+  }
+
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .project-links a {
+    padding-inline: 7px;
+  }
+
+  .project-links a span {
+    display: none;
+  }
+
+  .hero-status {
+    padding-inline: 18px;
+  }
+
+  .countdown {
+    max-width: 100%;
+    font-size: 31px;
+    letter-spacing: 0;
+  }
+
+  .status-meta {
+    flex-wrap: wrap;
+  }
+
+  .footer-records {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .footer-record-divider {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

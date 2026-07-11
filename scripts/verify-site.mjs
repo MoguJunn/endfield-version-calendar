@@ -36,12 +36,14 @@ for (const file of requiredFiles) {
   }
 }
 
-const [html, css, js, siteConfig, fontBuildScript] = await Promise.all([
+const [html, css, js, siteConfig, fontBuildScript, vercelConfig, verifyWorkflow] = await Promise.all([
   readFile(path.join(root, "index.html"), "utf8"),
   readFile(path.join(root, "styles.css"), "utf8"),
   readFile(path.join(root, "app.js"), "utf8"),
   readFile(path.join(root, "calendar-config.js"), "utf8"),
   readFile(path.join(root, "scripts/build-font-subsets.mjs"), "utf8"),
+  readFile(path.join(root, "vercel.json"), "utf8"),
+  readFile(path.join(root, ".github/workflows/verify.yml"), "utf8"),
 ]);
 
 const assertions = [
@@ -69,6 +71,12 @@ const assertions = [
   [css.includes("grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)") && css.includes(".footer-records"), "页尾主信息与备案区域布局不完整"],
   [html.includes("project-link-main") && html.includes("project-link-github"), "主站或 GitHub 入口缺少醒目样式标识"],
   [css.includes("@media (max-width: 640px)"), "缺少移动端响应式样式"],
+  [css.includes("touch-action: pan-x") && css.includes("overscroll-behavior-x: contain"), "移动端时间轴缺少横向触控滚动约束"],
+  [css.includes("max-height: calc(100dvh - 24px)"), "移动端活动弹窗缺少视口高度约束"],
+  [css.includes("grid-template-columns: auto minmax(0, 1fr)") && css.includes("min-width: 0"), "移动端顶部导航缺少窄屏收缩布局"],
+  [js.includes('window.addEventListener("resize", refreshTimelineViewport'), "时间轴未在屏幕尺寸变化后重算可见内容"],
+  [verifyWorkflow.includes("run: npm ci"), "GitHub Verify 工作流缺少依赖安装步骤"],
+  [vercelConfig.includes('"CDN-Cache-Control"') && vercelConfig.includes('"no-store"'), "Vercel 缺少页面防陈旧缓存策略"],
   [css.includes("prefers-reduced-motion"), "缺少动画降级支持"],
   [js.includes('timeZone: "Asia/Shanghai"'), "实时计算未固定为北京时间"],
   [js.includes('window.setInterval(updateLiveState, 1000)'), "实时状态没有按秒更新"],
