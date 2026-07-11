@@ -278,23 +278,60 @@ footer {
 }
 
 .project-links a {
-  padding: 8px 10px;
+  position: relative;
+  display: grid;
+  gap: 4px;
+  min-width: 126px;
+  padding: 10px 13px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.82);
+  color: #fff;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
-  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .project-links a:hover {
   border-color: var(--accent);
   background: rgba(216, 255, 56, 0.1);
   color: #fff;
+  transform: translateY(-2px);
+}
+
+.project-links a::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0.36);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.project-links a:hover::after {
+  transform: scaleX(1);
+}
+
+.project-links .project-link-main {
+  border-color: rgba(216, 255, 56, 0.62);
+  background: rgba(216, 255, 56, 0.13);
+}
+
+.project-links .project-link-github {
+  border-color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.project-links a strong {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.04em;
 }
 
 .project-links a span {
-  margin-left: 5px;
+  margin-left: 0;
   color: var(--accent);
   font: 700 10px/1 "Barlow Condensed", sans-serif;
   letter-spacing: 0.08em;
@@ -1347,8 +1384,6 @@ main {
 }
 
 footer {
-  display: flex;
-  justify-content: space-between;
   padding: 22px 0 28px;
   border-top: 1px solid var(--line);
   color: var(--muted);
@@ -2354,5 +2389,105 @@ footer,
 
   .version-axis .version-flag {
     top: 7px;
+  }
+}
+
+.site-footer {
+  display: flex;
+  width: min(1500px, calc(100% - 72px));
+  align-items: stretch;
+  flex-direction: column;
+  gap: 14px;
+  padding-block: 24px 30px;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.045em;
+}
+
+.footer-main {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-main > :first-child {
+  justify-self: start;
+}
+
+.footer-main > a {
+  justify-self: center;
+  font-weight: 700;
+}
+
+.footer-main > :last-child {
+  justify-self: end;
+  text-align: right;
+}
+
+.footer-records {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface), transparent 28%);
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.025em;
+  text-align: center;
+}
+
+.footer-records a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+}
+
+.footer-records[hidden],
+.footer-records a[hidden],
+.footer-record-divider[hidden] {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    align-items: flex-start;
+    gap: 16px;
+    padding-block: 16px;
+  }
+
+  .topbar-actions {
+    align-items: flex-end;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .project-links a {
+    min-width: 112px;
+    padding: 9px 11px;
+  }
+
+  .footer-main {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 7px;
+    text-align: center;
+  }
+
+  .footer-main > :first-child,
+  .footer-main > a,
+  .footer-main > :last-child {
+    justify-self: auto;
+    text-align: center;
+  }
+
+  .footer-records {
+    flex-wrap: wrap;
   }
 }

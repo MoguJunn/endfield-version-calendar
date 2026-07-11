@@ -1,5 +1,6 @@
 const DAY = 24 * 60 * 60 * 1000;
 const MAIN_SITE_STATS_API = "https://ef-gacha.mogujun.icu/api/stats";
+const CALENDAR_SITE_CONFIG = window.ENDFIELD_CALENDAR_CONFIG || {};
 let timelineStart = new Date("2026-07-16T12:00:00+08:00");
 let timelineEnd = new Date("2026-09-02T06:00:00+08:00");
 let totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
@@ -448,7 +449,42 @@ const elements = {
   scrollHint: document.querySelector("#scrollHint"),
   eventDialog: document.querySelector("#eventDialog"),
   dialogClose: document.querySelector("#dialogClose"),
+  footerRecords: document.querySelector("#footerRecords"),
+  icpRecord: document.querySelector("#icpRecord"),
+  policeRecord: document.querySelector("#policeRecord"),
 };
+
+function applyFooterRecords() {
+  const records = [
+    {
+      element: elements.icpRecord,
+      number: CALENDAR_SITE_CONFIG.icpNumber,
+      url: CALENDAR_SITE_CONFIG.icpUrl || "https://beian.miit.gov.cn/",
+    },
+    {
+      element: elements.policeRecord,
+      number: CALENDAR_SITE_CONFIG.policeNumber,
+      url: CALENDAR_SITE_CONFIG.policeUrl || "https://www.beian.gov.cn/",
+    },
+  ];
+  const visibleRecords = records.filter(({ number }) => String(number || "").trim());
+
+  records.forEach(({ element, number, url }) => {
+    if (!element) return;
+    const text = String(number || "").trim();
+    element.hidden = !text;
+    element.textContent = text;
+    element.href = url;
+  });
+
+  if (elements.footerRecords) {
+    elements.footerRecords.hidden = visibleRecords.length === 0;
+    const divider = elements.footerRecords.querySelector(".footer-record-divider");
+    if (divider) divider.hidden = visibleRecords.length < 2;
+  }
+}
+
+applyFooterRecords();
 
 let activeFilter = "all";
 let currentDayWidth = Number(elements.zoomRange.value);

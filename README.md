@@ -6,13 +6,13 @@
 
 一个面向《明日方舟：终末地》玩家的非官方版本活动时间轴，按北京时间实时展示活动状态、下一节点倒计时和完整日程。
 
-[![站点状态](https://img.shields.io/website?url=https%3A%2F%2Fendfield-version-calendar.vercel.app&label=live&up_message=online&down_message=offline)](https://endfield-version-calendar.vercel.app)
+[![站点状态](https://img.shields.io/website?url=https%3A%2F%2Fef-cal.mogujun.icu%2F&label=live&up_message=online&down_message=offline)](https://ef-cal.mogujun.icu/)
 [![项目校验](https://github.com/MoguJunn/endfield-version-calendar/actions/workflows/verify.yml/badge.svg)](https://github.com/MoguJunn/endfield-version-calendar/actions/workflows/verify.yml)
 [![许可证](https://img.shields.io/github/license/MoguJunn/endfield-version-calendar)](./LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![最后提交](https://img.shields.io/github/last-commit/MoguJunn/endfield-version-calendar)](https://github.com/MoguJunn/endfield-version-calendar/commits/main)
 
-[在线访问](https://endfield-version-calendar.vercel.app) · [抽卡主站](https://ef-gacha.mogujun.icu) · [问题反馈](https://github.com/MoguJunn/endfield-version-calendar/issues) · [参与贡献](./CONTRIBUTING.md)
+[在线访问](https://ef-cal.mogujun.icu/) · [抽卡主站](https://ef-gacha.mogujun.icu) · [问题反馈](https://github.com/MoguJunn/endfield-version-calendar/issues) · [参与贡献](./CONTRIBUTING.md)
 
 </div>
 
@@ -123,6 +123,7 @@ image: "./assets/events/op-wander.webp",
 ├─ assets/events/        # 可选活动图片
 ├─ scripts/              # 本地服务器、构建和结构检查
 ├─ app.js                # 日程数据、实时状态和交互
+├─ calendar-config.js    # 可选的 ICP 与公安备案展示配置
 ├─ index.html            # 页面结构
 ├─ styles.css            # 主题、布局与动效
 ├─ vercel.json           # Vercel 静态部署配置
@@ -131,13 +132,26 @@ image: "./assets/events/op-wander.webp",
 
 `dist/` 是构建产物，不纳入版本控制。
 
+### 可选备案信息
+
+在 `calendar-config.js` 中填写与部署主体一致的备案信息；未填写的项目不会显示，两个号码都为空时整个备案区域隐藏：
+
+```js
+window.ENDFIELD_CALENDAR_CONFIG = Object.freeze({
+  icpNumber: "示例 ICP 备案号",
+  icpUrl: "https://beian.miit.gov.cn/",
+  policeNumber: "示例公安备案号",
+  policeUrl: "https://www.beian.gov.cn/",
+});
+```
+
 ## 部署
 
 仓库已连接 Vercel。推送到 `main` 后，GitHub 会触发生产部署：
 
 - 构建命令：`npm run build`
 - 输出目录：`dist`
-- 生产地址：<https://endfield-version-calendar.vercel.app>
+- 生产地址：<https://ef-cal.mogujun.icu/>
 
 其他静态托管平台也可以直接发布 `npm run build` 生成的 `dist/`。
 

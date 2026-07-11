@@ -31,15 +31,17 @@
           <div class="topbar-actions">
             <div class="project-links" aria-label="项目链接">
               <a
+                class="project-link project-link-main"
                 href="https://ef-gacha.mogujun.icu"
                 target="_blank"
                 rel="noopener noreferrer"
-              >抽卡主站 <span>MAIN SITE ↗</span></a>
+              ><strong>抽卡主站</strong><span>MAIN SITE ↗</span></a>
               <a
+                class="project-link project-link-github"
                 href="https://github.com/MoguJunn/endfield-version-calendar"
                 target="_blank"
                 rel="noopener noreferrer"
-              >GitHub <span>SOURCE ↗</span></a>
+              ><strong>GitHub</strong><span>OPEN SOURCE ↗</span></a>
             </div>
             <span class="sync-state" id="syncState"><i></i><span>正在连接主站数据</span></span>
             <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
@@ -197,14 +199,21 @@
         </section>
       </main>
 
-      <footer>
-        <span>ARKNIGHTS: ENDFIELD · COMMUNITY CALENDAR</span>
-        <a
-          href="https://www.bilibili.com/opus/1223774493520953353"
-          target="_blank"
-          rel="noopener noreferrer"
-        >日历来源与致谢 · 罗德岛蜜饼工坊 ↗</a>
-        <span>数据更新时间 <time id="updatedAt">--</time></span>
+      <footer class="site-footer">
+        <div class="footer-main">
+          <span>ARKNIGHTS: ENDFIELD · COMMUNITY CALENDAR</span>
+          <a
+            href="https://www.bilibili.com/opus/1223774493520953353"
+            target="_blank"
+            rel="noopener noreferrer"
+          >日历来源与致谢 · 罗德岛蜜饼工坊 ↗</a>
+          <span>数据更新时间 <time id="updatedAt">--</time></span>
+        </div>
+        <div class="footer-records" id="footerRecords" hidden aria-label="网站备案信息">
+          <a id="icpRecord" target="_blank" rel="noopener noreferrer" hidden></a>
+          <span class="footer-record-divider" aria-hidden="true">|</span>
+          <a id="policeRecord" target="_blank" rel="noopener noreferrer" hidden></a>
+        </div>
       </footer>
     </div>
 
@@ -224,6 +233,7 @@
     </dialog>
 
     <noscript>此页面需要启用 JavaScript 才能计算实时活动状态。</noscript>
+    <script src="./calendar-config.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

@@ -8,6 +8,7 @@ const requiredFiles = [
   "index.html",
   "styles.css",
   "app.js",
+  "calendar-config.js",
   "package.json",
   "scripts/build-font-subsets.mjs",
   "assets/events/README.md",
@@ -35,10 +36,11 @@ for (const file of requiredFiles) {
   }
 }
 
-const [html, css, js] = await Promise.all([
+const [html, css, js, siteConfig] = await Promise.all([
   readFile(path.join(root, "index.html"), "utf8"),
   readFile(path.join(root, "styles.css"), "utf8"),
   readFile(path.join(root, "app.js"), "utf8"),
+  readFile(path.join(root, "calendar-config.js"), "utf8"),
 ]);
 
 const assertions = [
@@ -59,6 +61,11 @@ const assertions = [
   [html.includes('id="zoomShortcut"') && html.includes("Ctrl") && html.includes("滚轮"), "时间轴密度条缺少快捷操作提示"],
   [html.includes('id="activityNotice"'), "页面缺少活动待补充提示"],
   [html.includes('id="versionEndDate"') && html.includes('id="versionEndTime"'), "版本收束时间未接入动态节点"],
+  [html.includes('id="footerRecords"') && html.includes("calendar-config.js"), "页尾缺少可选备案配置入口"],
+  [siteConfig.includes("icpNumber") && siteConfig.includes("policeNumber"), "备案配置缺少 ICP 或公安备案选项"],
+  [js.includes("applyFooterRecords") && js.includes("CALENDAR_SITE_CONFIG"), "备案信息未接入可选显示逻辑"],
+  [css.includes("grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)") && css.includes(".footer-records"), "页尾主信息与备案区域布局不完整"],
+  [html.includes("project-link-main") && html.includes("project-link-github"), "主站或 GitHub 入口缺少醒目样式标识"],
   [css.includes("@media (max-width: 640px)"), "缺少移动端响应式样式"],
   [css.includes("prefers-reduced-motion"), "缺少动画降级支持"],
   [js.includes('timeZone: "Asia/Shanghai"'), "实时计算未固定为北京时间"],
