@@ -21,11 +21,20 @@
     "static-site"
   ],
   "scripts": {
+    "fonts:prepare": "node scripts/build-font-subsets.mjs",
+    "predev": "npm run fonts:prepare",
     "dev": "node scripts/dev-server.mjs",
+    "prebuild": "npm run fonts:prepare",
     "build": "node scripts/build.mjs",
+    "pretest": "npm run fonts:prepare",
     "test": "node scripts/verify-site.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "cn-font-split": "^7.4.3",
+    "fflate": "^0.8.3",
+    "harmonyos-sans": "^1.0.0"
   }
 }

@@ -1,8 +1,8 @@
 const DAY = 24 * 60 * 60 * 1000;
 const MAIN_SITE_STATS_API = "https://ef-gacha.mogujun.icu/api/stats";
-const timelineStart = new Date("2026-07-11T00:00:00+08:00");
-const timelineEnd = new Date("2026-09-03T00:00:00+08:00");
-const totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
+let timelineStart = new Date("2026-07-16T12:00:00+08:00");
+let timelineEnd = new Date("2026-09-02T06:00:00+08:00");
+let totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
 
 const categories = [
   { id: "operator", name: "干员寻访", en: "OPERATOR HEADHUNTING", icon: "⌁" },
@@ -104,6 +104,7 @@ const rawEvents = [
     lane: 0,
     symbol: "战",
     visual: "echo",
+    image: "./assets/events/Version%205/战争回想（两赛季相同）.png",
     description: "战争回响当前赛季，将在 8 月 9 日中午完成轮换。",
   },
   {
@@ -116,6 +117,7 @@ const rawEvents = [
     lane: 0,
     symbol: "战",
     visual: "echo",
+    image: "./assets/events/Version%205/战争回想（两赛季相同）.png",
     description: "8 月 9 日开放的新一期战争回响赛季。",
   },
   {
@@ -129,6 +131,7 @@ const rawEvents = [
     permanent: true,
     symbol: "契",
     visual: "story",
+    image: "./assets/events/Version%205/如同流星飞越边界.png",
     description: "梨诺叙事活动于 8 月 9 日起常驻开放，无限时结束时间。",
   },
   {
@@ -142,6 +145,7 @@ const rawEvents = [
     permanent: true,
     symbol: "碑",
     visual: "monument",
+    image: "./assets/events/Version%205/影拓丰碑+丰碑留名.png",
     description: "新系列内容于 8 月 6 日中午起常驻开放。",
   },
   {
@@ -154,6 +158,7 @@ const rawEvents = [
     lane: 3,
     symbol: "兽",
     visual: "monument",
+    image: "./assets/events/Version%205/影拓丰碑+丰碑留名.png",
     description: "限期开放的丰碑挑战内容。",
   },
   {
@@ -167,6 +172,7 @@ const rawEvents = [
     permanent: true,
     symbol: "境",
     visual: "realm",
+    image: "./assets/events/Version%205/密境行者.png",
     description: "新空间组于 8 月 19 日中午起常驻开放。",
   },
   {
@@ -180,6 +186,7 @@ const rawEvents = [
     lane: 3,
     symbol: "更",
     visual: "realm",
+    image: "./assets/events/Version%205/密境行者.png",
     description: "「密境行者」于 8 月 26 日 04:00 更新活动内容。该节点为单次更新时间标记，不代表一段新的持续活动。",
   },
   {
@@ -193,6 +200,7 @@ const rawEvents = [
     lane: 0,
     symbol: "礼",
     visual: "gift",
+    image: "./assets/events/Version%205/相伴赠礼.png",
     description: "版本相伴庆典赠礼，活动期间登录参与。",
   },
   {
@@ -205,6 +213,7 @@ const rawEvents = [
     lane: 1,
     symbol: "运",
     visual: "festival",
+    image: "./assets/events/Version%205/宏运连连乐.png",
     description: "版本前半程开放的庆典活动。",
   },
   {
@@ -217,6 +226,7 @@ const rawEvents = [
     lane: 2,
     symbol: "禁",
     visual: "northland",
+    image: "./assets/events/Version%205/北观禁土.png",
     description: "随版本首日开放的引入活动。",
   },
   {
@@ -229,6 +239,7 @@ const rawEvents = [
     lane: 3,
     symbol: "竞",
     visual: "arena",
+    image: "./assets/events/Version%205/炽燃！竞技大会！.png",
     description: "限期竞技挑战活动，开放至 8 月 13 日凌晨。",
   },
   {
@@ -241,6 +252,7 @@ const rawEvents = [
     lane: 4,
     symbol: "智",
     visual: "supply",
+    image: "./assets/events/Version%205/理智补给通用图.png",
     description: "活动期间每日完成指定任务，可获得理智消耗许可及应急理智加强剂等奖励。",
   },
   {
@@ -253,6 +265,7 @@ const rawEvents = [
     lane: 2,
     symbol: "根",
     visual: "roots",
+    image: "./assets/events/Version%205/根脉奇境.png",
     description: "版本后半程趣味活动，于版本收束时结束。",
   },
   {
@@ -265,6 +278,7 @@ const rawEvents = [
     lane: 4,
     symbol: "智",
     visual: "supply",
+    image: "./assets/events/Version%205/理智补给通用图.png",
     description: "版本末期开放的第二期理智补给，每日完成指定任务可领取补给奖励。",
   },
   {
@@ -284,26 +298,126 @@ const rawEvents = [
   },
 ];
 
+const fallbackVersion = {
+  versionKey: "version-5",
+  versionNumber: "5",
+  revision: 1,
+  title: "向渊行",
+  startsAt: "2026-07-16T12:00:00+08:00",
+  endsAt: "2026-09-02T06:00:00+08:00",
+  content: { activitiesComplete: true, events: rawEvents },
+  pools: [],
+  poolNames: {},
+  sourceMeta: {
+    source: "https://www.bilibili.com/opus/1223774493520953353",
+    author: "罗德岛蜜饼工坊",
+  },
+};
+
+const fallbackVersions = [
+  {
+    versionKey: "version-1",
+    versionNumber: "1",
+    revision: 1,
+    title: "零号委托",
+    startsAt: "2026-01-22T03:00:00+00:00",
+    endsAt: "2026-03-12T05:57:36+08:00",
+    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
+    pools: [],
+    poolNames: {},
+  },
+  {
+    versionKey: "version-2",
+    versionNumber: "2",
+    revision: 1,
+    title: "新潮起，故渊离",
+    startsAt: "2026-03-12T04:00:00+00:00",
+    endsAt: "2026-04-17T06:00:00+08:00",
+    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
+    pools: [],
+    poolNames: {},
+  },
+  {
+    versionKey: "version-3",
+    versionNumber: "3",
+    revision: 1,
+    title: "春晓时",
+    startsAt: "2026-04-17T04:00:00+00:00",
+    endsAt: "2026-06-05T12:00:00+08:00",
+    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
+    pools: [],
+    poolNames: {},
+  },
+  {
+    versionKey: "version-4",
+    versionNumber: "4",
+    revision: 1,
+    title: "寻遗散记",
+    startsAt: "2026-06-05T04:00:00+00:00",
+    endsAt: "2026-07-16T06:00:00+08:00",
+    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
+    pools: [],
+    poolNames: {},
+  },
+  fallbackVersion,
+];
+
+let versions = fallbackVersions;
+let currentVersion = fallbackVersion;
+
 function normalizeEvents(sourceEvents) {
-  return sourceEvents.map((event) => {
-  const followedEvent = event.follows
-    ? sourceEvents.find((candidate) => candidate.id === event.follows)
-    : null;
-  const start = event.start ?? followedEvent?.start;
-  const end = event.end === undefined ? followedEvent?.end : event.end;
-  return {
-    ...event,
-    start,
-    end,
-    startDate: new Date(start),
-    endDate: end ? new Date(end) : null,
-  };
+  const normalized = (Array.isArray(sourceEvents) ? sourceEvents : []).map((event) => {
+    const followedEvent = event.follows
+      ? sourceEvents.find((candidate) => candidate.id === event.follows)
+      : null;
+    const start = event.start ?? followedEvent?.start;
+    const end = event.end === undefined ? followedEvent?.end : event.end;
+    return {
+      ...event,
+      start,
+      end,
+      startDate: new Date(start),
+      endDate: end ? new Date(end) : null,
+    };
+  }).filter((event) => Number.isFinite(event.startDate.getTime()));
+
+  categories.forEach((category) => {
+    const laneEnds = [];
+    normalized
+      .filter((event) => event.category === category.id)
+      .sort((left, right) => left.startDate - right.startDate)
+      .forEach((event) => {
+        const eventEnd = event.endDate?.getTime() ?? timelineEnd.getTime();
+        if (Number.isFinite(event.lane)) {
+          laneEnds[event.lane] = Math.max(laneEnds[event.lane] || 0, eventEnd);
+          return;
+        }
+        const freeLane = laneEnds.findIndex((end) => !end || end <= event.startDate.getTime());
+        const lane = freeLane === -1 ? laneEnds.length : freeLane;
+        event.lane = lane;
+        laneEnds[lane] = eventEnd;
+      });
   });
+
+  return normalized;
 }
 
 let events = normalizeEvents(rawEvents);
 
 const elements = {
+  versionSwitcher: document.querySelector("#versionSwitcher"),
+  versionAxis: document.querySelector("#versionAxis"),
+  versionMarkers: document.querySelector("#versionMarkers"),
+  activityNotice: document.querySelector("#activityNotice"),
+  versionNumber: document.querySelector("#versionNumber"),
+  versionTitle: document.querySelector("#versionTitle"),
+  versionStatusLabel: document.querySelector("#versionStatusLabel"),
+  versionLiveLabel: document.querySelector("#versionLiveLabel"),
+  versionEndDate: document.querySelector("#versionEndDate"),
+  versionEndTime: document.querySelector("#versionEndTime"),
+  heroWatermark: document.querySelector("#heroWatermark"),
+  sourceCredit: document.querySelector("#sourceCredit"),
+  calendarNote: document.querySelector("#calendarNote"),
   timeline: document.querySelector("#timeline"),
   timelineBody: document.querySelector("#timelineBody"),
   timelineScroll: document.querySelector("#timelineScroll"),
@@ -348,6 +462,20 @@ const clockFormatter = new Intl.DateTimeFormat("zh-CN", {
   second: "2-digit",
   hour12: false,
 });
+
+function getBeijingParts(date) {
+  return Object.fromEntries(
+    new Intl.DateTimeFormat("zh-CN", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(date).map((part) => [part.type, part.value]),
+  );
+}
 
 function statusOf(event, now) {
   if (event.startUnknown) {
@@ -398,8 +526,33 @@ function eventEndShortText(event) {
   return "常驻开放";
 }
 
+function eventDurationText(event) {
+  if (event.startUnknown || event.milestone || !event.endDate) return "";
+  const totalMinutes = Math.max(1, Math.round((event.endDate - event.startDate) / 60_000));
+  const totalHours = Math.round(totalMinutes / 60);
+  if (totalHours >= 24) {
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    return `持续 ${days}天${hours ? `${hours}小时` : ""}`;
+  }
+  if (totalHours >= 1) return `持续 ${totalHours}小时`;
+  return `持续 ${totalMinutes}分钟`;
+}
+
+function eventRemainingText(event, now = new Date()) {
+  if (event.startUnknown || event.milestone || !event.endDate) return "";
+  if (now < event.startDate || now >= event.endDate) return "";
+  return `剩余 ${formatRelative(event.endDate - now)}`;
+}
+
 function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
+  element.classList.toggle("has-image", Boolean(event.image));
+  element.classList.toggle(
+    "pool-art",
+    Boolean(event.image) && (event.category === "operator" || event.category === "arsenal"),
+  );
+  if (event.backgroundType) element.dataset.backgroundType = event.backgroundType;
   element.style.setProperty("--event-color", event.color);
   element.style.setProperty("--event-image", event.image ? `url("${event.image}")` : "none");
 }
@@ -448,15 +601,20 @@ function renderDateAxis() {
     const weekday = beijingDate.getUTCDay();
     const cell = document.createElement("div");
     cell.className = `date-cell${weekday === 0 || weekday === 6 ? " weekend" : ""}${day === 1 ? " month-start" : ""}`;
-    cell.dataset.month = day === 1 ? `${month}月` : "";
-    cell.innerHTML = `<span>${["日", "一", "二", "三", "四", "五", "六"][weekday]}</span>${day}`;
-    cell.title = `2026年${month}月${day}日`;
+    cell.innerHTML = `
+      <span class="date-weekday">${["日", "一", "二", "三", "四", "五", "六"][weekday]}</span>
+      <strong class="date-number"><em>${month}/</em>${day}</strong>
+    `;
+    cell.title = `${beijingDate.getUTCFullYear()}年${month}月${day}日`;
     elements.dateAxis.appendChild(cell);
   }
 }
 
 function renderFilters() {
-  const options = [{ id: "all", name: "全部日程" }, ...categories];
+  const availableCategories = categories.filter((category) => (
+    events.some((event) => event.category === category.id)
+  ));
+  const options = [{ id: "all", name: "全部日程" }, ...availableCategories];
   elements.filters.innerHTML = "";
   options.forEach((item) => {
     const button = document.createElement("button");
@@ -474,9 +632,18 @@ function renderFilters() {
 
 function renderTimeline() {
   elements.timelineBody.innerHTML = "";
+  const availableCategories = categories.filter((category) => (
+    events.some((event) => event.category === category.id)
+  ));
   const visibleCategories = activeFilter === "all"
-    ? categories
-    : categories.filter((category) => category.id === activeFilter);
+    ? availableCategories
+    : availableCategories.filter((category) => category.id === activeFilter);
+
+  if (visibleCategories.length === 0) {
+    elements.timelineBody.innerHTML = '<div class="timeline-empty"><strong>活动待补充</strong><span>该版本尚无可展示的日程数据。</span></div>';
+    updateLiveState();
+    return;
+  }
 
   visibleCategories.forEach((category, categoryIndex) => {
     const categoryEvents = events.filter((event) => event.category === category.id);
@@ -507,6 +674,7 @@ function renderTimeline() {
           : event.endDate?.getTime() ?? timelineEnd.getTime(),
         timelineEnd.getTime(),
       );
+      if (visualEnd <= visualStart) return;
       const startOffset = (visualStart - timelineStart) / DAY;
       const duration = Math.max((visualEnd - visualStart) / DAY, 0.58);
       const button = document.createElement("button");
@@ -520,12 +688,18 @@ function renderTimeline() {
       button.style.setProperty("--event-ink", event.eventInk ?? "#fff");
       applyEventVisual(button, event);
       const relatedText = event.related ? `<em>&amp; ${event.related}</em>` : "";
+      const durationText = eventDurationText(event);
+      const remainingText = eventRemainingText(event);
+      button.classList.toggle("has-duration", Boolean(durationText));
+      button.classList.toggle("has-remaining", Boolean(remainingText));
       button.innerHTML = `
         <span class="event-art" aria-hidden="true"><b>${event.symbol ?? "◇"}</b></span>
         <span class="event-copy">
           <strong>${event.title} ${relatedText}</strong>
           <small>${eventStartShortText(event)}${event.milestone ? ` · ${eventEndShortText(event)}` : ` – ${eventEndShortText(event)}`}</small>
         </span>
+        <span class="event-remaining"${remainingText ? "" : " hidden"}>${remainingText}</span>
+        ${durationText ? `<span class="event-duration">${durationText}</span>` : ""}
       `;
       button.title = `${event.title}｜${statusText(event, new Date())}`;
       button.addEventListener("click", () => openEventDialog(event));
@@ -535,6 +709,7 @@ function renderTimeline() {
     group.append(label, tracks);
     elements.timelineBody.appendChild(group);
   });
+  scheduleVisibleEventContent();
   updateLiveState();
 }
 
@@ -580,22 +755,22 @@ function updateLiveState() {
 function updatePhase(now) {
   const phaseLabel = document.querySelector("#phaseLabel");
   const phaseDescription = document.querySelector("#phaseDescription");
-  const firstOpen = new Date("2026-07-16T12:00:00+08:00");
-  const secondOpen = new Date("2026-08-09T12:00:00+08:00");
-  const versionEnd = new Date("2026-09-02T06:00:00+08:00");
+  const versionStart = new Date(currentVersion.startsAt || timelineStart);
+  const versionEnd = new Date(currentVersion.endsAt || timelineEnd);
+  const midpoint = new Date(versionStart.getTime() + (versionEnd - versionStart) / 2);
 
-  if (now < firstOpen) {
-    phaseLabel.textContent = "庆典预热";
-    phaseDescription.textContent = `${formatRelative(firstOpen - now)}后首批内容开放`;
-  } else if (now < secondOpen) {
+  if (now < versionStart) {
+    phaseLabel.textContent = "版本待开放";
+    phaseDescription.textContent = `${formatRelative(versionStart - now)}后版本开启`;
+  } else if (now < midpoint) {
     phaseLabel.textContent = "版本上半程";
-    phaseDescription.textContent = "首期寻访与相伴庆典正在进行";
+    phaseDescription.textContent = `${currentVersion.title}正在进行`;
   } else if (now < versionEnd) {
     phaseLabel.textContent = "版本下半程";
-    phaseDescription.textContent = "第二期寻访与根脉奇境正在进行";
+    phaseDescription.textContent = `距离版本收束还有${formatRelative(versionEnd - now)}`;
   } else {
     phaseLabel.textContent = "版本已收束";
-    phaseDescription.textContent = "本期限定日程已经结束";
+    phaseDescription.textContent = `${currentVersion.title}历史日程`;
   }
 }
 
@@ -621,6 +796,13 @@ function updateEventBars(now) {
     bar.classList.remove("live", "upcoming", "ended");
     bar.classList.add(statusOf(event, now));
     bar.title = `${event.title}｜${statusText(event, now)}`;
+    const remaining = bar.querySelector(".event-remaining");
+    if (remaining) {
+      const text = eventRemainingText(event, now);
+      remaining.textContent = text;
+      remaining.hidden = !text;
+      bar.classList.toggle("has-remaining", Boolean(text));
+    }
   });
 }
 
@@ -678,11 +860,108 @@ function openEventDialog(event) {
   elements.eventDialog.showModal();
 }
 
+function getTimelineLabelWidth() {
+  return Number.parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue("--label-width"),
+  ) || 0;
+}
+
+let eventViewportFrame = 0;
+
+function updateVisibleEventContent() {
+  eventViewportFrame = 0;
+  updatePinnedVersionFlags();
+  const labelWidth = getTimelineLabelWidth();
+  const viewStart = elements.timelineScroll.scrollLeft + labelWidth;
+  const viewEnd = elements.timelineScroll.scrollLeft + elements.timelineScroll.clientWidth;
+
+  document.querySelectorAll(".event-bar").forEach((bar) => {
+    const start = Number.parseFloat(bar.style.getPropertyValue("--start")) || 0;
+    const duration = Number.parseFloat(bar.style.getPropertyValue("--duration")) || 0;
+    const barStart = labelWidth + start * currentDayWidth;
+    const barWidth = Math.max(duration * currentDayWidth, 20);
+    const barEnd = barStart + barWidth;
+    const visibleStart = Math.max(barStart, viewStart);
+    const visibleEnd = Math.min(barEnd, viewEnd);
+
+    if (visibleEnd <= visibleStart) return;
+
+    const hiddenLeft = Math.max(visibleStart - barStart, 0);
+    const visibleWidth = visibleEnd - visibleStart;
+    const visualWidth = Math.min(barWidth * 0.42, 190);
+    const visualInset = Math.min(
+      Math.max(visibleEnd - barStart - visualWidth, hiddenLeft),
+      Math.max(barWidth - visualWidth, 0),
+    );
+    const copyWidth = Math.max(visibleWidth, 20);
+
+    bar.style.setProperty("--visible-inset", `${hiddenLeft}px`);
+    bar.style.setProperty("--visible-right-inset", `${Math.max(barEnd - visibleEnd, 0)}px`);
+    bar.style.setProperty("--visible-copy-width", `${copyWidth}px`);
+    bar.style.setProperty("--visual-inset", `${visualInset}px`);
+  });
+}
+
+function updatePinnedVersionFlags() {
+  const scrollLeft = elements.timelineScroll.scrollLeft;
+  document.querySelectorAll(".version-flag").forEach((flag) => {
+    const startOffset = Number.parseFloat(flag.dataset.startOffset);
+    const endOffset = Number.parseFloat(flag.dataset.endOffset);
+    if (!Number.isFinite(startOffset) || !Number.isFinite(endOffset)) return;
+    const start = startOffset * currentDayWidth;
+    const end = endOffset * currentDayWidth;
+    const lastLeft = Math.max(start, end - flag.offsetWidth - 14);
+    flag.style.left = `${Math.min(Math.max(scrollLeft, start), lastLeft)}px`;
+  });
+}
+
+function scheduleVisibleEventContent() {
+  if (eventViewportFrame) return;
+  eventViewportFrame = window.requestAnimationFrame(updateVisibleEventContent);
+}
+
+function setTimelineDensity(nextWidth, anchorViewportX = null) {
+  const min = Number(elements.zoomRange.min);
+  const max = Number(elements.zoomRange.max);
+  const step = Number(elements.zoomRange.step) || 1;
+  const normalized = Math.min(max, Math.max(min, Math.round(nextWidth / step) * step));
+  if (normalized === currentDayWidth) return;
+
+  const labelWidth = getTimelineLabelWidth();
+  const defaultAnchor = labelWidth
+    + Math.max(elements.timelineScroll.clientWidth - labelWidth, 0) / 2;
+  const anchor = Math.min(
+    elements.timelineScroll.clientWidth,
+    Math.max(labelWidth, anchorViewportX ?? defaultAnchor),
+  );
+  const anchoredDay = (
+    elements.timelineScroll.scrollLeft + anchor - labelWidth
+  ) / currentDayWidth;
+
+  currentDayWidth = normalized;
+  elements.zoomRange.value = String(normalized);
+  elements.timeline.style.setProperty("--day-width", `${normalized}px`);
+  elements.timelineScroll.scrollLeft = Math.max(
+    0,
+    labelWidth + anchoredDay * normalized - anchor,
+  );
+  scheduleVisibleEventContent();
+}
+
 function jumpToNow(behavior = "smooth") {
   const nowOffset = Math.min(Math.max((Date.now() - timelineStart) / DAY, 0), totalDays);
-  const target = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--label-width"))
-    + nowOffset * currentDayWidth
-    - elements.timelineScroll.clientWidth / 2;
+  const labelWidth = getTimelineLabelWidth();
+  const visibleTimelineWidth = Math.max(elements.timelineScroll.clientWidth - labelWidth, 0);
+  const target = nowOffset * currentDayWidth - visibleTimelineWidth / 2;
+  elements.timelineScroll.scrollTo({ left: Math.max(0, target), behavior });
+  elements.scrollHint.classList.add("hidden");
+}
+
+function jumpToVersion(version, behavior = "smooth") {
+  const startsAt = Date.parse(version?.startsAt || "");
+  if (!Number.isFinite(startsAt)) return;
+  const offset = Math.min(Math.max((startsAt - timelineStart.getTime()) / DAY, 0), totalDays);
+  const target = offset * currentDayWidth;
   elements.timelineScroll.scrollTo({ left: Math.max(0, target), behavior });
   elements.scrollHint.classList.add("hidden");
 }
@@ -760,6 +1039,387 @@ function formatDatabasePoolTitle(event, poolName) {
   return event.category === "operator" ? `「${name}」特许寻访` : `「${name}」`;
 }
 
+function resolveMainSiteAssetUrl(value) {
+  const source = String(value || "").trim();
+  if (!source) return null;
+  try {
+    return new URL(source, MAIN_SITE_STATS_API).href;
+  } catch {
+    return null;
+  }
+}
+
+function normalizePoolLookupKey(value) {
+  return String(value || "").trim().toLocaleLowerCase("zh-CN");
+}
+
+function legacyPoolSequenceKey(poolId) {
+  return String(poolId || "")
+    .replace(/^(?:special|joint|weaponbox|weponbox)_/iu, "")
+    .replace(/^manual_(?:limited|weapon)_pool_/iu, "manual_")
+    .trim();
+}
+
+function isLegacyWeaponPool(pool) {
+  return /(?:weapon|wepon|武器|申领)/iu.test(
+    `${pool?.type || ""} ${pool?.id || pool?.poolId || ""} ${pool?.name || ""}`,
+  );
+}
+
+function buildLegacyPoolCatalog(poolRows, characterRows) {
+  const characterLookup = new Map();
+  (Array.isArray(characterRows) ? characterRows : [])
+    .forEach((character) => {
+      [character.id, character.name, ...(Array.isArray(character.aliases) ? character.aliases : [])]
+        .forEach((key) => {
+          const normalized = normalizePoolLookupKey(key);
+          if (normalized && !characterLookup.has(normalized)) characterLookup.set(normalized, character);
+        });
+    });
+
+  const normalizedPools = (Array.isArray(poolRows) ? poolRows : [])
+    .map((pool) => ({
+      poolId: pool.id || pool.poolId,
+      name: pool.name,
+      type: isLegacyWeaponPool(pool) ? "arsenal" : "operator",
+      startsAt: pool.start_time || pool.startsAt,
+      endsAt: pool.end_time || pool.endsAt,
+      bannerUrl: pool.banner_url || pool.bannerUrl || null,
+      upCharacter: pool.up_character || pool.upCharacter || null,
+      description: pool.description || null,
+      featuredCharacters: Array.isArray(pool.featured_characters)
+        ? pool.featured_characters
+        : Array.isArray(pool.featuredCharacters)
+          ? pool.featuredCharacters
+          : [],
+    }))
+    .filter((pool) => pool.poolId && pool.name && pool.startsAt);
+
+  const operatorPools = normalizedPools.filter((pool) => pool.type === "operator");
+  const operatorCharacter = new Map();
+  const directArtwork = new Map();
+  normalizedPools.forEach((pool) => {
+    const item = characterLookup.get(normalizePoolLookupKey(pool.upCharacter))
+      || pool.featuredCharacters
+        .map((value) => characterLookup.get(normalizePoolLookupKey(value)))
+        .find(Boolean)
+      || null;
+    if (item) directArtwork.set(pool.poolId, item);
+  });
+  operatorPools.forEach((pool) => {
+    const character = directArtwork.get(pool.poolId) || null;
+    if (character) operatorCharacter.set(pool.poolId, character);
+  });
+
+  const operatorBySequence = new Map();
+  operatorPools.forEach((pool) => {
+    const character = operatorCharacter.get(pool.poolId);
+    const sequence = legacyPoolSequenceKey(pool.poolId);
+    if (character && sequence && !operatorBySequence.has(sequence)) {
+      operatorBySequence.set(sequence, character);
+    }
+  });
+
+  const weaponOwnerByName = new Map();
+  normalizedPools.filter((pool) => pool.type === "arsenal").forEach((pool) => {
+    const character = operatorBySequence.get(legacyPoolSequenceKey(pool.poolId));
+    const weaponName = normalizePoolLookupKey(pool.upCharacter);
+    if (character && weaponName && !weaponOwnerByName.has(weaponName)) {
+      weaponOwnerByName.set(weaponName, character);
+    }
+  });
+
+  return normalizedPools.map((pool) => {
+    let character = directArtwork.get(pool.poolId) || operatorCharacter.get(pool.poolId) || null;
+    if (!character && pool.type === "arsenal") {
+      character = weaponOwnerByName.get(normalizePoolLookupKey(pool.upCharacter))
+        || operatorBySequence.get(legacyPoolSequenceKey(pool.poolId))
+        || operatorPools
+          .map((candidate) => ({
+            candidate,
+            distance: Math.abs(Date.parse(candidate.startsAt) - Date.parse(pool.startsAt)),
+          }))
+          .filter(({ distance }) => Number.isFinite(distance) && distance <= 36 * 60 * 60 * 1000)
+          .sort((left, right) => left.distance - right.distance)
+          .map(({ candidate }) => operatorCharacter.get(candidate.poolId))
+          .find(Boolean)
+        || null;
+    }
+    return {
+      ...pool,
+      backgroundCharacter: character?.name || null,
+      backgroundType: character?.type || null,
+      backgroundUrl: character?.avatar_url || character?.avatarUrl || null,
+    };
+  });
+}
+
+function poolOverlapsVersion(pool, version) {
+  const poolStart = Date.parse(pool.startsAt || "");
+  const poolEnd = Date.parse(pool.endsAt || "");
+  const versionStart = Date.parse(version.startsAt || "");
+  const versionEnd = Date.parse(version.endsAt || "");
+  return Number.isFinite(poolStart) && Number.isFinite(versionStart)
+    && (!Number.isFinite(versionEnd) || poolStart < versionEnd)
+    && (!Number.isFinite(poolEnd) || poolEnd > versionStart);
+}
+
+function applyLegacyCatalogToVersions(poolRows, characterRows) {
+  const catalog = buildLegacyPoolCatalog(poolRows, characterRows);
+  const selectedVersionKey = currentVersion.versionKey;
+  versions = versions.map((version) => {
+    const pools = catalog.filter((pool) => poolOverlapsVersion(pool, version));
+    return {
+      ...version,
+      pools,
+      poolNames: Object.fromEntries(pools.map((pool) => [pool.poolId, pool.name])),
+    };
+  });
+  return renderSeamlessCalendar(selectedVersionKey, { scroll: false });
+}
+
+function poolToEvent(pool) {
+  const category = pool.type === "arsenal" ? "arsenal" : "operator";
+  const name = cleanDatabasePoolName(pool.name);
+  return {
+    id: `pool-${pool.poolId}`,
+    poolId: pool.poolId,
+    category,
+    title: category === "operator" ? `「${name}」特许寻访` : `「${name}」`,
+    start: pool.startsAt,
+    end: pool.endsAt,
+    color: category === "operator" ? "#43aebc" : "#8f4bd6",
+    symbol: category === "operator" ? "访" : "武",
+    visual: category,
+    image: resolveMainSiteAssetUrl(pool.backgroundUrl || pool.bannerUrl),
+    backgroundCharacter: pool.backgroundCharacter || null,
+    description: pool.description || `${name}卡池日程，由主站卡池数据库自动载入。`,
+    sourceNote: "开始与结束时间来自主站卡池数据库；跨版本部分会按当前版本边界裁切。",
+  };
+}
+
+function buildEventsForVersion(version) {
+  const remoteEvents = Array.isArray(version?.content?.events) ? version.content.events : [];
+  const localEvents = version.versionKey === fallbackVersion.versionKey ? rawEvents : [];
+  const localById = new Map(localEvents.map((event) => [event.id, event]));
+  const remoteIds = new Set(remoteEvents.map((event) => event.id));
+  const mergedEvents = remoteEvents.map((remoteEvent) => ({
+    ...(localById.get(remoteEvent.id) || {}),
+    ...remoteEvent,
+  }));
+  localEvents.forEach((localEvent) => {
+    if (!remoteIds.has(localEvent.id)) mergedEvents.push(localEvent);
+  });
+
+  const bindings = version.poolBindings && typeof version.poolBindings === "object"
+    ? version.poolBindings
+    : {};
+  const pools = Array.isArray(version.pools) ? version.pools : [];
+  const poolsById = new Map(pools.map((pool) => [pool.poolId, pool]));
+  const representedPoolIds = new Set();
+  const enrichedEvents = mergedEvents.map((event) => {
+    const poolId = bindings[event.id] || event.poolId || null;
+    const pool = poolId ? poolsById.get(poolId) : null;
+    if (poolId) representedPoolIds.add(poolId);
+    if (!pool) return { ...event, poolId };
+    return {
+      ...event,
+      poolId,
+      title: formatDatabasePoolTitle(event, pool.name),
+      image: resolveMainSiteAssetUrl(pool.backgroundUrl || pool.bannerUrl) || event.image || null,
+      backgroundCharacter: pool.backgroundCharacter || event.backgroundCharacter || null,
+      backgroundType: pool.backgroundType || event.backgroundType || null,
+      start: event.start || pool.startsAt,
+      end: event.end === undefined ? pool.endsAt : event.end,
+      databasePoolName: pool.name,
+    };
+  });
+
+  pools.forEach((pool) => {
+    if (!representedPoolIds.has(pool.poolId)) enrichedEvents.push(poolToEvent(pool));
+  });
+
+  const versionStart = Date.parse(version.startsAt || "");
+  const versionEnd = Date.parse(version.endsAt || "");
+  return normalizeEvents(enrichedEvents).filter((event) => {
+    const eventStart = event.startDate.getTime();
+    const eventEnd = event.endDate?.getTime();
+    return (!Number.isFinite(versionEnd) || eventStart < versionEnd)
+      && (!Number.isFinite(eventEnd) || !Number.isFinite(versionStart) || eventEnd > versionStart);
+  });
+}
+
+function buildSeamlessEvents() {
+  const mergedByKey = new Map();
+  versions.forEach((version) => {
+    buildEventsForVersion(version).forEach((event) => {
+      const key = event.poolId ? `pool:${event.poolId}` : `event:${version.versionKey}:${event.id}`;
+      const candidate = { ...event, versionKey: version.versionKey, lane: undefined };
+      const existing = mergedByKey.get(key);
+      if (!existing) {
+        mergedByKey.set(key, candidate);
+        return;
+      }
+
+      const candidateIsCurated = !String(candidate.id || "").startsWith("pool-");
+      const existingIsCurated = !String(existing.id || "").startsWith("pool-");
+      const primary = candidateIsCurated && !existingIsCurated ? candidate : existing;
+      const secondary = primary === candidate ? existing : candidate;
+      mergedByKey.set(key, {
+        ...secondary,
+        ...primary,
+        image: primary.image || secondary.image || null,
+        backgroundCharacter: primary.backgroundCharacter || secondary.backgroundCharacter || null,
+        backgroundType: primary.backgroundType || secondary.backgroundType || null,
+        lane: undefined,
+      });
+    });
+  });
+
+  return normalizeEvents([...mergedByKey.values()]);
+}
+
+function floorBeijingDay(timestamp) {
+  const shifted = new Date(timestamp + 8 * 3_600_000);
+  return Date.UTC(
+    shifted.getUTCFullYear(),
+    shifted.getUTCMonth(),
+    shifted.getUTCDate(),
+  ) - 8 * 3_600_000;
+}
+
+function ceilBeijingDay(timestamp) {
+  const floor = floorBeijingDay(timestamp);
+  return timestamp === floor ? floor : floor + DAY;
+}
+
+function setSeamlessTimelineBounds() {
+  const starts = versions.map((version) => Date.parse(version.startsAt || "")).filter(Number.isFinite);
+  const ends = versions.map((version) => Date.parse(version.endsAt || "")).filter(Number.isFinite);
+  timelineStart = starts.length > 0
+    ? new Date(floorBeijingDay(Math.min(...starts)))
+    : new Date(fallbackVersion.startsAt);
+  timelineEnd = ends.length > 0
+    ? new Date(ceilBeijingDay(Math.max(...ends)))
+    : new Date(fallbackVersion.endsAt);
+  if (timelineEnd <= timelineStart) timelineEnd = new Date(timelineStart.getTime() + 42 * DAY);
+  totalDays = Math.max(1, Math.ceil((timelineEnd - timelineStart) / DAY));
+}
+
+function renderVersionMarkers() {
+  elements.versionAxis.innerHTML = "";
+  elements.versionMarkers.innerHTML = "";
+  versions.forEach((version, index) => {
+    const start = Date.parse(version.startsAt || "");
+    if (!Number.isFinite(start)) return;
+    const nextStart = Date.parse(versions[index + 1]?.startsAt || "");
+    const configuredEnd = Date.parse(version.endsAt || "");
+    const end = Number.isFinite(nextStart)
+      ? nextStart
+      : Number.isFinite(configuredEnd)
+        ? configuredEnd
+        : timelineEnd.getTime();
+    const startOffset = (start - timelineStart.getTime()) / DAY;
+    const endOffset = Math.max((end - timelineStart.getTime()) / DAY, startOffset);
+    const marker = document.createElement("div");
+    marker.className = `version-marker${version.versionKey === currentVersion.versionKey ? " active" : ""}`;
+    marker.dataset.versionKey = version.versionKey;
+    marker.style.setProperty("--version-offset", startOffset);
+
+    const flag = document.createElement("div");
+    flag.className = `version-flag${version.versionKey === currentVersion.versionKey ? " active" : ""}`;
+    flag.dataset.versionKey = version.versionKey;
+    flag.dataset.startOffset = String(startOffset);
+    flag.dataset.endOffset = String(endOffset);
+    flag.style.setProperty("--version-offset", startOffset);
+    const number = document.createElement("span");
+    number.className = "version-flag-number";
+    number.textContent = `VER.${String(version.versionNumber || index + 1).padStart(2, "0")}`;
+    const title = document.createElement("strong");
+    title.textContent = version.title || "未命名版本";
+    const count = document.createElement("span");
+    count.className = "version-flag-count";
+    count.textContent = `${Array.isArray(version.pools) ? version.pools.length : 0} 卡池`;
+    const tail = document.createElement("i");
+    tail.setAttribute("aria-hidden", "true");
+    flag.append(number, title, count, tail);
+    elements.versionAxis.appendChild(flag);
+    elements.versionMarkers.appendChild(marker);
+  });
+  window.requestAnimationFrame(updatePinnedVersionFlags);
+}
+
+function renderVersionSwitcher() {
+  elements.versionSwitcher.innerHTML = "";
+  versions.forEach((version) => {
+    const button = document.createElement("button");
+    const selected = version.versionKey === currentVersion.versionKey;
+    button.type = "button";
+    button.role = "tab";
+    button.className = `version-tab${selected ? " active" : ""}`;
+    button.setAttribute("aria-selected", String(selected));
+    const number = document.createElement("span");
+    number.textContent = `VERSION ${version.versionNumber || "?"}`;
+    const title = document.createElement("strong");
+    title.textContent = version.title || "未命名版本";
+    button.append(number, title);
+    button.addEventListener("click", () => selectVersion(version.versionKey));
+    elements.versionSwitcher.appendChild(button);
+  });
+}
+
+function updateVersionMetadata() {
+  const title = currentVersion.title || "未命名版本";
+  const versionNumber = currentVersion.versionNumber || "?";
+  const selectedStart = new Date(currentVersion.startsAt || timelineStart);
+  const selectedEnd = new Date(currentVersion.endsAt || timelineEnd);
+  const startParts = getBeijingParts(selectedStart);
+  const endParts = getBeijingParts(selectedEnd);
+  const activitiesComplete = currentVersion.content?.activitiesComplete !== false;
+
+  elements.versionNumber.textContent = `VERSION ${versionNumber}`;
+  elements.versionTitle.textContent = `「${title}」`;
+  elements.versionStatusLabel.textContent = activitiesComplete ? "版本内容 · 实时日历" : "历史版本 · 活动待补充";
+  elements.versionLiveLabel.textContent = `${startParts.year}.${startParts.month}.${startParts.day} — ${endParts.year}.${endParts.month}.${endParts.day}`;
+  elements.versionEndDate.textContent = `${endParts.month}.${endParts.day}`;
+  elements.versionEndTime.textContent = `${endParts.year} · ${endParts.hour}:${endParts.minute}`;
+  elements.heroWatermark.textContent = String(currentVersion.versionKey || title).replace(/[^a-z0-9]+/giu, " ").trim().toUpperCase();
+  elements.activityNotice.hidden = activitiesComplete;
+  elements.activityNotice.querySelector("strong").textContent = currentVersion.content?.emptyMessage || "活动待补充";
+  elements.sourceCredit.hidden = currentVersion.versionKey !== fallbackVersion.versionKey;
+  elements.calendarNote.textContent = activitiesComplete
+    ? `页面依据「${title}」版本数据库与已核对活动资料整理；若游戏内时间与页面不一致，请以官方公告和游戏内实际时间为准。`
+    : `「${title}」历史版本的角色与武器卡池已从主站数据库载入，其他活动仍待补充；跨版本卡池会在无缝总轴中连续展示。`;
+  document.title = `「${title}」Version ${versionNumber} 实时日历`;
+  document.querySelector('meta[name="description"]').content = `《明日方舟：终末地》Version ${versionNumber}「${title}」活动实时日历与时间轴`;
+}
+
+function selectVersion(versionKey, { scroll = true } = {}) {
+  const nextVersion = versions.find((version) => version.versionKey === versionKey);
+  if (!nextVersion) return false;
+  currentVersion = nextVersion;
+  lastAgendaSignature = "";
+  updateVersionMetadata();
+  renderVersionSwitcher();
+  renderVersionMarkers();
+  updateLiveState();
+  if (scroll) window.setTimeout(() => jumpToVersion(currentVersion, "smooth"), 0);
+  return true;
+}
+
+function renderSeamlessCalendar(selectedVersionKey, { scroll = false } = {}) {
+  setSeamlessTimelineBounds();
+  events = buildSeamlessEvents();
+  activeFilter = "all";
+  lastAgendaSignature = "";
+  elements.timeline.style.setProperty("--days", totalDays);
+  elements.timeline.style.setProperty("--day-width", `${currentDayWidth}px`);
+  renderDateAxis();
+  renderFilters();
+  renderTimeline();
+  return selectVersion(selectedVersionKey, { scroll });
+}
+
 function setSyncState(text, state) {
   const syncState = document.querySelector("#syncState");
   if (!syncState) return;
@@ -798,29 +1458,63 @@ function applyPoolNames(poolNames) {
   return changed;
 }
 
+function applyPoolCatalog(poolRows) {
+  if (!Array.isArray(poolRows)) return false;
+  const poolsById = new Map(poolRows.map((pool) => [pool.id || pool.poolId, pool]));
+  let changed = false;
+  events = events.map((event) => {
+    const pool = event.poolId ? poolsById.get(event.poolId) : null;
+    if (!pool) return event;
+    const title = formatDatabasePoolTitle(event, pool.name);
+    const image = resolveMainSiteAssetUrl(
+      pool.backgroundUrl || pool.background_url || pool.bannerUrl || pool.banner_url,
+    ) || event.image || null;
+    changed ||= title !== event.title || image !== event.image;
+    return { ...event, title, image, databasePoolName: pool.name };
+  });
+  return changed;
+}
+
 function applyVersionSnapshot(snapshot) {
-  const remoteEvents = snapshot?.content?.events;
-  const poolBindings = snapshot?.poolBindings || {};
-  if (!Array.isArray(remoteEvents) || remoteEvents.length === 0) return false;
+  if (!snapshot || typeof snapshot !== "object") return false;
+  const hasMultiVersionPayload = Array.isArray(snapshot?.versions) && snapshot.versions.length > 1;
+  const remoteVersions = hasMultiVersionPayload
+    ? snapshot.versions
+    : fallbackVersions.map((version) => {
+      const matchesSnapshot = snapshot?.versionKey === version.versionKey
+        || (snapshot?.versionKey === "xiangyuan-2026" && version.versionKey === "version-5");
+      return matchesSnapshot
+        ? {
+          ...version,
+          ...snapshot,
+          versionKey: version.versionKey,
+          versionNumber: snapshot.versionNumber || version.versionNumber,
+          title: snapshot.title || version.title,
+          startsAt: snapshot.startsAt || version.startsAt,
+          endsAt: snapshot.endsAt || version.endsAt,
+        }
+        : version;
+    });
+  versions = remoteVersions
+    .filter((version) => version?.versionKey && version?.startsAt)
+    .sort((left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt));
+  if (versions.length === 0) return false;
 
-  const localById = new Map(rawEvents.map((event) => [event.id, event]));
-  const remoteIds = new Set(remoteEvents.map((event) => event.id));
-  const mergedEvents = remoteEvents.map((remoteEvent) => {
-    const localEvent = localById.get(remoteEvent.id) || {};
-    return {
-      ...localEvent,
-      ...remoteEvent,
-      poolId: poolBindings[remoteEvent.id] || remoteEvent.poolId || localEvent.poolId,
-      image: localEvent.image || remoteEvent.image,
-    };
+  const requestedVersion = new URLSearchParams(window.location.search).get("version");
+  const now = Date.now();
+  const timeMatchedVersion = versions.find((version) => {
+    const startsAt = Date.parse(version.startsAt || "");
+    const endsAt = Date.parse(version.endsAt || "");
+    return Number.isFinite(startsAt) && startsAt <= now
+      && (!Number.isFinite(endsAt) || now < endsAt);
   });
-  rawEvents.forEach((localEvent) => {
-    if (!remoteIds.has(localEvent.id)) mergedEvents.push(localEvent);
-  });
-
-  events = normalizeEvents(mergedEvents);
-  applyPoolNames(snapshot.poolNames);
-  return true;
+  const selectedVersion = versions.find((version) => (
+    version.versionKey === requestedVersion || version.versionNumber === requestedVersion
+  )) || versions.find((version) => version.versionKey === snapshot.activeVersionKey)
+    || versions.find((version) => version.versionKey === snapshot.versionKey)
+    || timeMatchedVersion
+    || versions[versions.length - 1];
+  return renderSeamlessCalendar(selectedVersion.versionKey, { scroll: false });
 }
 
 function redrawAfterDatabaseSync() {
@@ -830,16 +1524,19 @@ function redrawAfterDatabaseSync() {
 }
 
 async function loadMainSiteData() {
+  let snapshot = null;
+  let hasMultiVersionPayload = false;
   try {
     const snapshotResult = await fetchMainSiteStats("version_calendar");
-    const snapshot = snapshotResult?.data?.versionCalendar;
+    snapshot = snapshotResult?.data?.versionCalendar;
+    hasMultiVersionPayload = Array.isArray(snapshot?.versions) && snapshot.versions.length > 1;
     if (applyVersionSnapshot(snapshot)) {
       redrawAfterDatabaseSync();
-      setSyncState("主站版本数据库已同步", "synced");
+      setSyncState(hasMultiVersionPayload ? "主站版本数据库已同步" : "正在补充历史版本", "synced");
       document.querySelector("#updatedAt").textContent = snapshot.updatedAt
         ? `${fullDateFormatter.format(new Date(snapshot.updatedAt))} · 数据库修订 ${snapshot.revision}`
         : `数据库修订 ${snapshot.revision}`;
-      return;
+      if (hasMultiVersionPayload) return;
     }
   } catch {
     // 新接口尚未部署或快照表尚未迁移时，继续使用现有公开卡池目录。
@@ -848,33 +1545,39 @@ async function loadMainSiteData() {
   try {
     const catalogResult = await fetchMainSiteStats("pool_catalog");
     const poolRows = Array.isArray(catalogResult?.data?.pools) ? catalogResult.data.pools : [];
+    let characterRows = [];
+    try {
+      const characterResult = await fetchMainSiteStats("characters");
+      characterRows = Array.isArray(characterResult?.data?.characters)
+        ? characterResult.data.characters
+        : [];
+    } catch {
+      // 角色图读取失败时仍保留历史卡池时间轴和现有色块。
+    }
     const poolNames = Object.fromEntries(
       poolRows
         .filter((pool) => pool?.id && pool?.name)
         .map((pool) => [pool.id, pool.name]),
     );
     applyPoolNames(poolNames);
+    applyPoolCatalog(poolRows);
+    applyLegacyCatalogToVersions(poolRows, characterRows);
     redrawAfterDatabaseSync();
-    setSyncState("主站卡池数据库已同步", "synced");
+    setSyncState("历史版本与卡池已同步", "synced");
   } catch {
     setSyncState("本地备份数据", "fallback");
   }
 }
 
 function init() {
-  elements.timeline.style.setProperty("--days", totalDays);
-  elements.timeline.style.setProperty("--day-width", `${currentDayWidth}px`);
   document.querySelector("#updatedAt").textContent = "2026-07-11 · 日程二次核对";
-  renderDateAxis();
-  renderFilters();
-  renderTimeline();
+  renderSeamlessCalendar(fallbackVersion.versionKey, { scroll: false });
   setupDragScroll();
   setupTheme();
   setupMotion();
 
   elements.zoomRange.addEventListener("input", (event) => {
-    currentDayWidth = Number(event.target.value);
-    elements.timeline.style.setProperty("--day-width", `${currentDayWidth}px`);
+    setTimelineDensity(Number(event.target.value));
   });
   elements.jumpNow.addEventListener("click", () => jumpToNow());
   elements.dialogClose.addEventListener("click", () => elements.eventDialog.close());
@@ -883,9 +1586,20 @@ function init() {
   });
   elements.timelineScroll.addEventListener("scroll", () => {
     if (elements.timelineScroll.scrollLeft > 30) elements.scrollHint.classList.add("hidden");
+    scheduleVisibleEventContent();
   }, { passive: true });
+  elements.timelineScroll.addEventListener("wheel", (event) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    const rect = elements.timelineScroll.getBoundingClientRect();
+    const anchor = event.clientX - rect.left;
+    const direction = event.deltaY > 0 ? -1 : 1;
+    const step = Number(elements.zoomRange.step) || 2;
+    setTimelineDensity(currentDayWidth + direction * step, anchor);
+  }, { passive: false });
+  window.addEventListener("resize", scheduleVisibleEventContent, { passive: true });
 
-  window.setTimeout(() => jumpToNow("auto"), 100);
+  window.setTimeout(() => jumpToVersion(currentVersion, "auto"), 100);
   window.setInterval(updateLiveState, 1000);
   void loadMainSiteData();
 }

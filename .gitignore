@@ -2,6 +2,7 @@
 node_modules/
 dist/
 coverage/
+assets/fonts/harmony/
 
 # Local environment and secrets
 .env

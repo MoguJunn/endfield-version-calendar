@@ -9,12 +9,6 @@
       content="《明日方舟：终末地》「向渊行」版本活动实时日历与时间轴"
     />
     <title>「向渊行」版本实时日历</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -56,17 +50,18 @@
 
         <div class="hero-content" id="top">
           <div class="hero-copy">
-            <p class="eyebrow"><span>VERSION 5</span> 相伴庆典 · 核心章节</p>
-            <h1><span class="title-prefix">「</span>向渊行<span class="title-prefix">」</span></h1>
+            <p class="eyebrow"><span id="versionNumber">VERSION 5</span> <b id="versionStatusLabel">版本内容 · 实时日历</b></p>
+            <h1 id="versionTitle"><span class="title-prefix">「</span>向渊行<span class="title-prefix">」</span></h1>
             <div class="hero-subline">
               <strong>版本内容实时日历</strong>
-              <span>VER. 26.07.11 LIVE</span>
+              <span id="versionLiveLabel">DATABASE SYNC</span>
             </div>
             <p class="hero-description">
               所有时间按北京时间（UTC+8）展示。活动状态与剩余时间会在页面内自动更新。
             </p>
             <a
               class="source-credit"
+              id="sourceCredit"
               href="https://www.bilibili.com/opus/1223774493520953353"
               target="_blank"
               rel="noopener noreferrer"
@@ -88,7 +83,7 @@
           </aside>
         </div>
 
-        <div class="hero-watermark" aria-hidden="true">XIANGYUAN</div>
+        <div class="hero-watermark" id="heroWatermark" aria-hidden="true">XIANGYUAN</div>
       </header>
 
       <main>
@@ -105,8 +100,8 @@
           </article>
           <article class="metric">
             <span class="metric-label">版本收束</span>
-            <strong>09.02</strong>
-            <small>2026 · 06:00</small>
+            <strong id="versionEndDate">09.02</strong>
+            <small id="versionEndTime">2026 · 06:00</small>
           </article>
           <article class="metric metric-wide">
             <span class="metric-label">当前阶段</span>
@@ -129,6 +124,13 @@
             </div>
           </div>
 
+          <nav class="version-switcher" id="versionSwitcher" aria-label="选择版本" role="tablist"></nav>
+
+          <div class="activity-notice" id="activityNotice" hidden>
+            <strong>活动待补充</strong>
+            <span>该历史版本的卡池日程已从主站数据库载入，其他活动仍在整理。</span>
+          </div>
+
           <div class="calendar-toolbar">
             <div class="filters" id="filters" aria-label="按活动类型筛选"></div>
             <div class="view-actions">
@@ -148,7 +150,9 @@
                   <strong>UTC+8</strong>
                 </div>
                 <div class="date-axis" id="dateAxis"></div>
+                <div class="version-axis" id="versionAxis" aria-label="版本标题轨道"></div>
                 <div class="timeline-body" id="timelineBody"></div>
+                <div class="version-markers" id="versionMarkers" aria-label="版本分割线"></div>
                 <div class="now-line" id="nowLine" aria-hidden="true">
                   <span id="nowLineLabel">现在</span>
                 </div>
@@ -175,7 +179,7 @@
           <div class="notes-mark" aria-hidden="true">!</div>
           <div>
             <strong>日程说明</strong>
-            <p>
+            <p id="calendarNote">
               页面依据「向渊行」版本内容时间轴整理；“常驻开放”的项目只标记开放时刻。若游戏内时间与页面不一致，请以官方公告和游戏内实际时间为准。
             </p>
           </div>
