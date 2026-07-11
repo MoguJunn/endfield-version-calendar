@@ -8,6 +8,11 @@
 
 特别感谢罗德岛蜜饼工坊第一时间整理并公开分享原始时间轴。本项目在此基础上补充了实时状态、北京时间倒计时、筛选与活动详情等网页交互；若页面内容与游戏内显示不一致，请以官方公告和游戏内实际时间为准。
 
+## 在线访问
+
+- Vercel：<https://endfield-version-calendar.vercel.app>
+- GitHub：<https://github.com/MoguJunn/endfield-version-calendar>
+
 ## 环境要求
 
 - Node.js 20 或更高版本
