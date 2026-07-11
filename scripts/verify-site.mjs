@@ -26,6 +26,8 @@ const assertions = [
   [html.includes('id="countdown"'), "页面缺少实时倒计时"],
   [html.includes('id="eventDialog"'), "页面缺少活动详情弹窗"],
   [html.includes('name="viewport"'), "页面缺少移动端 viewport"],
+  [html.includes('https://www.bilibili.com/opus/1223774493520953353'), "页面缺少日历来源链接"],
+  [html.includes("罗德岛蜜饼工坊"), "页面缺少日历来源致谢"],
   [css.includes("@media (max-width: 640px)"), "缺少移动端响应式样式"],
   [css.includes("prefers-reduced-motion"), "缺少动画降级支持"],
   [js.includes('timeZone: "Asia/Shanghai"'), "实时计算未固定为北京时间"],

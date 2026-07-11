@@ -65,7 +65,9 @@ button {
 button:focus-visible,
 input:focus-visible,
 .timeline-scroll:focus-visible,
-.event-bar:focus-visible {
+.event-bar:focus-visible,
+.source-credit:focus-visible,
+footer a:focus-visible {
   outline: 3px solid var(--accent-strong);
   outline-offset: 3px;
 }
@@ -355,6 +357,54 @@ footer {
   margin: 22px 0 0;
   color: rgba(255, 255, 255, 0.56);
   font-size: 13px;
+}
+
+.source-credit {
+  display: grid;
+  width: min(100%, 580px);
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(216, 255, 56, 0.34);
+  border-left: 4px solid var(--accent);
+  background: rgba(216, 255, 56, 0.07);
+  color: #f8faf5;
+  text-decoration: none;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.source-credit:hover {
+  border-color: rgba(216, 255, 56, 0.72);
+  background: rgba(216, 255, 56, 0.13);
+  transform: translateY(-2px);
+}
+
+.source-credit span {
+  color: var(--accent);
+  font: 700 11px/1.2 "Barlow Condensed", "Noto Sans SC", sans-serif;
+  letter-spacing: 0.14em;
+}
+
+.source-credit strong {
+  margin-top: 7px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.source-credit em {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+  font-style: normal;
+}
+
+footer a {
+  color: inherit;
+  text-decoration-color: var(--accent-strong);
+  text-underline-offset: 4px;
+}
+
+footer a:hover {
+  color: var(--accent-strong);
 }
 
 .hero-status {

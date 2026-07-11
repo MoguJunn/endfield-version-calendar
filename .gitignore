@@ -17,5 +17,6 @@ id_ed25519*
 .cursor/
 .idea/
 .vscode/
+.vercel/
 .DS_Store
 Thumbs.db
