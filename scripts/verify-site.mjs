@@ -56,6 +56,7 @@ const assertions = [
   [html.includes('id="versionSwitcher"'), "页面缺少多版本切换器"],
   [html.includes('id="versionMarkers"'), "页面缺少版本旗帜分割线容器"],
   [html.includes('id="versionAxis"'), "页面缺少独立版本标题轨道"],
+  [html.includes('id="zoomShortcut"') && html.includes("Ctrl") && html.includes("滚轮"), "时间轴密度条缺少快捷操作提示"],
   [html.includes('id="activityNotice"'), "页面缺少活动待补充提示"],
   [html.includes('id="versionEndDate"') && html.includes('id="versionEndTime"'), "版本收束时间未接入动态节点"],
   [css.includes("@media (max-width: 640px)"), "缺少移动端响应式样式"],
@@ -107,6 +108,7 @@ const assertions = [
   [js.includes('"pool-art"'), "角色与武器透明图未使用独立前景样式"],
   [js.includes("updatePinnedVersionFlags"), "版本旗帜未固定在当前版本可见区左侧"],
   [js.includes("setTimelineDensity") && js.includes('addEventListener("wheel"'), "时间轴缺少中心锚定缩放或 Ctrl 滚轮密度调节"],
+  [js.includes('classList.add("density-adjusting")'), "时间轴密度调节缺少状态动效反馈"],
   [js.includes("./assets/events/Version%205/相伴赠礼.png"), "Version 5 活动图片未接入"],
   [js.includes("let timelineStart") && js.includes("let timelineEnd"), "时间轴边界仍未按版本动态切换"],
   [js.includes("updateCountdownDisplay"), "缺少倒计时变化动效控制"],
@@ -118,6 +120,15 @@ const assertions = [
   [css.includes('Harmony Sans App') && css.includes('assets/fonts/harmony/sc-medium/result.css'), "全站未接入主站同款 HarmonyOS 字体"],
   [css.includes("Novecento Sans Wide Tabular App") && css.includes("Novecento-Wide-Bold-Tabular.otf"), "倒计时未接入主站特殊数字字体"],
   [css.includes(".event-duration") && css.includes(".event-remaining"), "日程持续时间或剩余时间样式缺失"],
+  [css.includes(".zoom-shortcut") && css.includes(".zoom-shortcut kbd"), "密度快捷键提示缺少可视样式"],
+  [css.includes("@keyframes versionFlagReveal") && css.includes("@keyframes eventBadgeReveal"), "版本旗帜或时间标签缺少动效"],
+  [css.includes("@keyframes dateCellReveal") && css.includes("@keyframes densityFrameFeedback"), "日期轴或密度调节缺少动效"],
+  [js.includes("timelineIntroPlayed") && js.includes("play-timeline-intro"), "时间轴入场动效缺少单次播放保护"],
+  [js.includes("eventTrackType") && js.includes("laneOffset"), "活动内部分类未参与轨道排布"],
+  [js.includes("updateArsenalViewportLayout") && js.includes("visibleLaneCount + 1"), "武库申领高度未按当前可见轨道动态计算"],
+  [js.includes('overlayFor: "secret-realm"') && css.includes(".event-update-pin"), "密境行者内容更新未使用依附式更新标记"],
+  [js.includes("visibleCategories.forEach") && !js.includes("timelineTrackMeta"), "时间轴未恢复原有大类展示"],
+  [html.includes('aria-label="按活动大类筛选"'), "时间轴筛选说明未恢复为活动大类"],
 ];
 
 for (const [passed, message] of assertions) {

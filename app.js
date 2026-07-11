@@ -9,6 +9,7 @@ const categories = [
   { id: "arsenal", name: "武库申领", en: "ARSENAL ISSUE", icon: "✕" },
   { id: "permanent", name: "常驻活动", en: "PERMANENT CONTENT", icon: "▦" },
   { id: "limited", name: "限时活动", en: "LIMITED EVENTS", icon: "✦" },
+  { id: "update", name: "内容更新", en: "CONTENT UPDATE", icon: "⚑", overlay: true },
 ];
 
 const rawEvents = [
@@ -177,13 +178,14 @@ const rawEvents = [
   },
   {
     id: "secret-realm-update",
-    category: "permanent",
-    title: "「密境行者」活动内容更新",
+    category: "update",
+    eventType: "content-update",
+    overlayFor: "secret-realm",
+    title: "「密境行者」内容更新",
     start: "2026-08-26T04:00:00+08:00",
     end: null,
     milestone: true,
     color: "#7181bd",
-    lane: 3,
     symbol: "更",
     visual: "realm",
     image: "./assets/events/Version%205/密境行者.png",
@@ -364,6 +366,18 @@ const fallbackVersions = [
 
 let versions = fallbackVersions;
 let currentVersion = fallbackVersion;
+let timelineIntroPlayed = false;
+
+function eventTrackType(event) {
+  if (event.trackType) return event.trackType;
+  if (event.category === "operator" || event.category === "arsenal") return event.category;
+  if (event.id?.startsWith("war-echo")) return "war-echo";
+  if (event.id?.startsWith("monument-")) return "monument";
+  if (event.id?.startsWith("secret-realm")) return "secret-realm";
+  if (event.id === "companion-gift" || event.id === "next-version-warmup") return "signin";
+  if (event.id?.startsWith("sanity-supply")) return "sanity-supply";
+  return event.visual || event.id || event.category;
+}
 
 function normalizeEvents(sourceEvents) {
   const normalized = (Array.isArray(sourceEvents) ? sourceEvents : []).map((event) => {
@@ -376,27 +390,31 @@ function normalizeEvents(sourceEvents) {
       ...event,
       start,
       end,
+      trackType: eventTrackType(event),
       startDate: new Date(start),
       endDate: end ? new Date(end) : null,
     };
   }).filter((event) => Number.isFinite(event.startDate.getTime()));
 
-  categories.forEach((category) => {
-    const laneEnds = [];
-    normalized
-      .filter((event) => event.category === category.id)
-      .sort((left, right) => left.startDate - right.startDate)
-      .forEach((event) => {
-        const eventEnd = event.endDate?.getTime() ?? timelineEnd.getTime();
-        if (Number.isFinite(event.lane)) {
-          laneEnds[event.lane] = Math.max(laneEnds[event.lane] || 0, eventEnd);
-          return;
-        }
-        const freeLane = laneEnds.findIndex((end) => !end || end <= event.startDate.getTime());
-        const lane = freeLane === -1 ? laneEnds.length : freeLane;
-        event.lane = lane;
-        laneEnds[lane] = eventEnd;
-      });
+  categories.filter((category) => !category.overlay).forEach((category) => {
+    const categoryEvents = normalized.filter((event) => event.category === category.id);
+    const typeOrder = [...new Set(categoryEvents.map((event) => event.trackType))];
+    let laneOffset = 0;
+
+    typeOrder.forEach((trackType) => {
+      const laneEnds = [];
+      categoryEvents
+        .filter((event) => event.trackType === trackType)
+        .sort((left, right) => left.startDate - right.startDate)
+        .forEach((event) => {
+          const eventEnd = event.endDate?.getTime() ?? timelineEnd.getTime();
+          const freeLane = laneEnds.findIndex((end) => !end || end <= event.startDate.getTime());
+          const localLane = freeLane === -1 ? laneEnds.length : freeLane;
+          event.lane = laneOffset + localLane;
+          laneEnds[localLane] = eventEnd;
+        });
+      laneOffset += Math.max(laneEnds.length, 1);
+    });
   });
 
   return normalized;
@@ -601,6 +619,8 @@ function renderDateAxis() {
     const weekday = beijingDate.getUTCDay();
     const cell = document.createElement("div");
     cell.className = `date-cell${weekday === 0 || weekday === 6 ? " weekend" : ""}${day === 1 ? " month-start" : ""}`;
+    cell.style.setProperty("--date-index", index);
+    cell.style.setProperty("--date-delay", `${Math.min(index, 24) * 12}ms`);
     cell.innerHTML = `
       <span class="date-weekday">${["日", "一", "二", "三", "四", "五", "六"][weekday]}</span>
       <strong class="date-number"><em>${month}/</em>${day}</strong>
@@ -612,7 +632,7 @@ function renderDateAxis() {
 
 function renderFilters() {
   const availableCategories = categories.filter((category) => (
-    events.some((event) => event.category === category.id)
+    !category.overlay && events.some((event) => event.category === category.id)
   ));
   const options = [{ id: "all", name: "全部日程" }, ...availableCategories];
   elements.filters.innerHTML = "";
@@ -630,27 +650,35 @@ function renderFilters() {
   });
 }
 
-function renderTimeline() {
+function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
+  const shouldAnimate = animate && !timelineIntroPlayed;
+  elements.timeline.classList.toggle("play-timeline-intro", shouldAnimate);
   elements.timelineBody.innerHTML = "";
   const availableCategories = categories.filter((category) => (
-    events.some((event) => event.category === category.id)
+    !category.overlay && events.some((event) => event.category === category.id)
   ));
   const visibleCategories = activeFilter === "all"
     ? availableCategories
     : availableCategories.filter((category) => category.id === activeFilter);
 
   if (visibleCategories.length === 0) {
-    elements.timelineBody.innerHTML = '<div class="timeline-empty"><strong>活动待补充</strong><span>该版本尚无可展示的日程数据。</span></div>';
+    elements.timelineBody.innerHTML = '<div class="timeline-empty"><strong>日程待补充</strong><span>当前筛选范围内暂时没有可展示的日程。</span></div>';
+    timelineIntroPlayed = true;
     updateLiveState();
     return;
   }
 
   visibleCategories.forEach((category, categoryIndex) => {
-    const categoryEvents = events.filter((event) => event.category === category.id);
-    const maxLane = Math.max(...categoryEvents.map((event) => event.lane), 0);
-    const groupHeight = Math.max(128, 20 + (maxLane + 1) * 52);
+    const categoryEvents = events.filter((event) => (
+      event.category === category.id && !event.overlayFor
+    ));
+    const laneCount = Math.max(...categoryEvents.map((event) => event.lane), 0) + 1;
+    const groupHeight = category.id === "arsenal"
+      ? 128
+      : Math.max(128, 20 + laneCount * 52);
     const group = document.createElement("section");
-    group.className = "category-group";
+    group.className = `category-group category-${category.id}`;
+    group.dataset.category = category.id;
     group.style.minHeight = `${groupHeight}px`;
 
     const label = document.createElement("div");
@@ -669,9 +697,7 @@ function renderTimeline() {
     categoryEvents.forEach((event, eventIndex) => {
       const visualStart = Math.max(event.startDate.getTime(), timelineStart.getTime());
       const visualEnd = Math.min(
-        event.milestone
-          ? visualStart + 0.58 * DAY
-          : event.endDate?.getTime() ?? timelineEnd.getTime(),
+        event.endDate?.getTime() ?? timelineEnd.getTime(),
         timelineEnd.getTime(),
       );
       if (visualEnd <= visualStart) return;
@@ -681,6 +707,7 @@ function renderTimeline() {
       button.className = `event-bar ${statusOf(event, new Date())}${event.permanent ? " permanent" : ""}${event.endLabel ? " open-ended" : ""}${event.milestone ? " milestone" : ""}`;
       button.type = "button";
       button.dataset.eventId = event.id;
+      button.dataset.lane = String(event.lane);
       button.style.setProperty("--start", startOffset);
       button.style.setProperty("--duration", duration);
       button.style.setProperty("--lane", event.lane);
@@ -704,11 +731,36 @@ function renderTimeline() {
       button.title = `${event.title}｜${statusText(event, new Date())}`;
       button.addEventListener("click", () => openEventDialog(event));
       tracks.appendChild(button);
+
+      events
+        .filter((overlay) => overlay.overlayFor === event.id)
+        .forEach((overlay) => {
+          const overlayOffset = (overlay.startDate - timelineStart) / DAY;
+          if (overlayOffset < 0 || overlayOffset > totalDays) return;
+          const updatePin = document.createElement("button");
+          updatePin.className = `event-update-pin ${statusOf(overlay, new Date())}`;
+          updatePin.type = "button";
+          updatePin.dataset.eventId = overlay.id;
+          updatePin.style.setProperty("--start", overlayOffset);
+          updatePin.style.setProperty("--lane", event.lane);
+          updatePin.style.setProperty("--event-color", overlay.color || event.color);
+          updatePin.innerHTML = `
+            <span class="event-update-pin__flag">${overlay.symbol || "更"}</span>
+            <span class="event-update-pin__copy">
+              <strong>内容更新</strong>
+              <small>${eventStartShortText(overlay)}</small>
+            </span>
+          `;
+          updatePin.title = `${overlay.title}｜${statusText(overlay, new Date())}`;
+          updatePin.addEventListener("click", () => openEventDialog(overlay));
+          tracks.appendChild(updatePin);
+        });
     });
 
     group.append(label, tracks);
     elements.timelineBody.appendChild(group);
   });
+  timelineIntroPlayed = true;
   scheduleVisibleEventContent();
   updateLiveState();
 }
@@ -741,9 +793,9 @@ function updateLiveState() {
     updateCountdownDisplay(next.date - now);
     document.querySelector("#nextEventAt").textContent = beijingDateFormatter.format(next.date);
   } else {
-    document.querySelector("#nextEventName").textContent = "本版本日程已全部结束";
+    document.querySelector("#nextEventName").textContent = "时间轴内暂无后续节点";
     updateCountdownDisplay(0);
-    document.querySelector("#nextEventAt").textContent = "期待下个版本";
+    document.querySelector("#nextEventAt").textContent = "等待后续日程更新";
   }
 
   updatePhase(now);
@@ -804,6 +856,13 @@ function updateEventBars(now) {
       bar.classList.toggle("has-remaining", Boolean(text));
     }
   });
+  document.querySelectorAll(".event-update-pin").forEach((pin) => {
+    const event = events.find((item) => item.id === pin.dataset.eventId);
+    if (!event) return;
+    pin.classList.remove("live", "upcoming", "ended");
+    pin.classList.add(statusOf(event, now));
+    pin.title = `${event.title}｜${statusText(event, now)}`;
+  });
 }
 
 function renderAgenda(now, milestones = getMilestones(now)) {
@@ -818,7 +877,7 @@ function renderAgenda(now, milestones = getMilestones(now)) {
   agendaGrid.innerHTML = "";
 
   if (uniqueStarts.length === 0) {
-    agendaGrid.innerHTML = '<article class="agenda-card empty">本版本暂无后续新增日程</article>';
+    agendaGrid.innerHTML = '<article class="agenda-card empty">当前时间轴内暂无后续新增日程</article>';
     return;
   }
 
@@ -866,10 +925,47 @@ function getTimelineLabelWidth() {
   ) || 0;
 }
 
+function updateArsenalViewportLayout() {
+  const group = elements.timelineBody.querySelector('[data-category="arsenal"]');
+  if (!group) return;
+
+  const bars = [...group.querySelectorAll(".event-bar")];
+  const labelWidth = getTimelineLabelWidth();
+  const visibleStart = timelineStart.getTime()
+    + Math.max(elements.timelineScroll.scrollLeft / currentDayWidth, 0) * DAY;
+  const visibleTrackWidth = Math.max(elements.timelineScroll.clientWidth - labelWidth, 0);
+  const visibleEnd = visibleStart + visibleTrackWidth / currentDayWidth * DAY;
+  const visibleBars = bars.filter((bar) => {
+    const event = events.find((item) => item.id === bar.dataset.eventId);
+    if (!event) return false;
+    const eventEnd = event.endDate?.getTime() ?? timelineEnd.getTime();
+    return event.startDate.getTime() < visibleEnd && eventEnd > visibleStart;
+  });
+  const visibleLanes = [...new Set(
+    visibleBars.map((bar) => Number.parseInt(bar.dataset.lane, 10)),
+  )]
+    .filter(Number.isFinite)
+    .sort((left, right) => left - right);
+  const laneMap = new Map(visibleLanes.map((lane, index) => [lane, index]));
+
+  bars.forEach((bar) => {
+    const originalLane = Number.parseInt(bar.dataset.lane, 10);
+    bar.style.setProperty("--lane", laneMap.get(originalLane) ?? 0);
+  });
+
+  const visibleLaneCount = Math.max(visibleLanes.length, 1);
+  const groupHeight = Math.max(128, 20 + (visibleLaneCount + 1) * 52);
+  group.style.minHeight = `${groupHeight}px`;
+  const tracks = group.querySelector(".category-tracks");
+  if (tracks) tracks.style.minHeight = `${groupHeight}px`;
+}
+
 let eventViewportFrame = 0;
+let densityFeedbackTimer = 0;
 
 function updateVisibleEventContent() {
   eventViewportFrame = 0;
+  updateArsenalViewportLayout();
   updatePinnedVersionFlags();
   const labelWidth = getTimelineLabelWidth();
   const viewStart = elements.timelineScroll.scrollLeft + labelWidth;
@@ -945,6 +1041,16 @@ function setTimelineDensity(nextWidth, anchorViewportX = null) {
     0,
     labelWidth + anchoredDay * normalized - anchor,
   );
+  const frame = elements.timelineScroll.closest(".timeline-frame");
+  if (frame) {
+    frame.classList.remove("density-adjusting");
+    void frame.offsetWidth;
+    frame.classList.add("density-adjusting");
+    window.clearTimeout(densityFeedbackTimer);
+    densityFeedbackTimer = window.setTimeout(() => {
+      frame.classList.remove("density-adjusting");
+    }, 420);
+  }
   scheduleVisibleEventContent();
 }
 
@@ -1325,6 +1431,8 @@ function renderVersionMarkers() {
     marker.className = `version-marker${version.versionKey === currentVersion.versionKey ? " active" : ""}`;
     marker.dataset.versionKey = version.versionKey;
     marker.style.setProperty("--version-offset", startOffset);
+    marker.style.setProperty("--version-index", index);
+    marker.style.setProperty("--version-delay", `${index * 65}ms`);
 
     const flag = document.createElement("div");
     flag.className = `version-flag${version.versionKey === currentVersion.versionKey ? " active" : ""}`;
@@ -1332,6 +1440,8 @@ function renderVersionMarkers() {
     flag.dataset.startOffset = String(startOffset);
     flag.dataset.endOffset = String(endOffset);
     flag.style.setProperty("--version-offset", startOffset);
+    flag.style.setProperty("--version-index", index);
+    flag.style.setProperty("--version-delay", `${index * 65}ms`);
     const number = document.createElement("span");
     number.className = "version-flag-number";
     number.textContent = `VER.${String(version.versionNumber || index + 1).padStart(2, "0")}`;
@@ -1385,7 +1495,7 @@ function updateVersionMetadata() {
   elements.versionEndTime.textContent = `${endParts.year} · ${endParts.hour}:${endParts.minute}`;
   elements.heroWatermark.textContent = String(currentVersion.versionKey || title).replace(/[^a-z0-9]+/giu, " ").trim().toUpperCase();
   elements.activityNotice.hidden = activitiesComplete;
-  elements.activityNotice.querySelector("strong").textContent = currentVersion.content?.emptyMessage || "活动待补充";
+  elements.activityNotice.querySelector("strong").textContent = "历史活动整理中";
   elements.sourceCredit.hidden = currentVersion.versionKey !== fallbackVersion.versionKey;
   elements.calendarNote.textContent = activitiesComplete
     ? `页面依据「${title}」版本数据库与已核对活动资料整理；若游戏内时间与页面不一致，请以官方公告和游戏内实际时间为准。`

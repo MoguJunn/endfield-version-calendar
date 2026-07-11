@@ -114,8 +114,8 @@
           <div class="section-heading">
             <div>
               <p class="section-index">01 / SCHEDULE</p>
-              <h2 id="calendarTitle">版本内容时间轴</h2>
-              <p>拖动横向时间轴查看完整日程，点击活动条查看详细时间。</p>
+              <h2 id="calendarTitle">全版本日程时间轴</h2>
+              <p>横向拖动可浏览各版本的完整日程，点击活动条或更新标记可查看详情。</p>
             </div>
             <div class="legend" aria-label="活动状态图例">
               <span><i class="legend-dot live"></i>进行中</span>
@@ -127,16 +127,27 @@
           <nav class="version-switcher" id="versionSwitcher" aria-label="选择版本" role="tablist"></nav>
 
           <div class="activity-notice" id="activityNotice" hidden>
-            <strong>活动待补充</strong>
-            <span>该历史版本的卡池日程已从主站数据库载入，其他活动仍在整理。</span>
+              <strong>历史活动整理中</strong>
+              <span>寻访与武库日程已从主站数据库载入，其他历史活动仍在逐步补充。</span>
           </div>
 
           <div class="calendar-toolbar">
-            <div class="filters" id="filters" aria-label="按活动类型筛选"></div>
+            <div class="filters" id="filters" aria-label="按活动大类筛选"></div>
             <div class="view-actions">
               <label class="zoom-control">
-                <span>时间轴密度</span>
-                <input id="zoomRange" type="range" min="22" max="52" value="34" step="2" />
+                <span class="zoom-label">时间轴密度</span>
+                <span class="zoom-shortcut" id="zoomShortcut">
+                  <kbd>←</kbd><kbd>→</kbd><span>或</span><kbd>Ctrl</kbd><span>+ 滚轮</span>
+                </span>
+                <input
+                  id="zoomRange"
+                  type="range"
+                  min="22"
+                  max="52"
+                  value="34"
+                  step="2"
+                  aria-describedby="zoomShortcut"
+                />
               </label>
               <button class="toolbar-button" id="jumpNow" type="button">定位现在</button>
             </div>
