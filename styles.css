@@ -67,6 +67,7 @@ input:focus-visible,
 .timeline-scroll:focus-visible,
 .event-bar:focus-visible,
 .source-credit:focus-visible,
+.project-links a:focus-visible,
 footer a:focus-visible {
   outline: 3px solid var(--accent-strong);
   outline-offset: 3px;
@@ -251,6 +252,35 @@ footer {
 
 .topbar-actions {
   gap: 18px;
+}
+
+.project-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-links a {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.project-links a:hover {
+  border-color: var(--accent);
+  background: rgba(216, 255, 56, 0.1);
+  color: #fff;
+}
+
+.project-links a span {
+  margin-left: 5px;
+  color: var(--accent);
+  font: 700 10px/1 "Barlow Condensed", sans-serif;
+  letter-spacing: 0.08em;
 }
 
 .sync-state {
@@ -1713,6 +1743,32 @@ footer,
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar-actions {
+    gap: 8px;
+  }
+
+  .project-links {
+    gap: 4px;
+  }
+
+  .project-links a {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  .project-links a span,
+  .sync-state {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand > span:last-child {
+    display: none;
   }
 }
 
