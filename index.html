@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111311" />
+    <meta
+      name="description"
+      content="《明日方舟：终末地》「向渊行」版本活动实时日历与时间轴"
+    />
+    <title>「向渊行」版本实时日历</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-scanline" aria-hidden="true"></div>
+        <div class="hero-signal" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="hero-orbit hero-orbit-a" aria-hidden="true"></div>
+        <div class="hero-orbit hero-orbit-b" aria-hidden="true"></div>
+
+        <nav class="topbar" aria-label="页面导航">
+          <a class="brand" href="#top" aria-label="终末地版本日历首页">
+            <span class="brand-mark">EF</span>
+            <span>
+              <strong>ENDFIELD</strong>
+              <small>VERSION CALENDAR</small>
+            </span>
+          </a>
+          <div class="topbar-actions">
+            <span class="sync-state" id="syncState"><i></i><span>正在连接主站数据</span></span>
+            <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
+              <span class="theme-icon" aria-hidden="true">◐</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="hero-content" id="top">
+          <div class="hero-copy">
+            <p class="eyebrow"><span>VERSION 1.1</span> 相伴庆典 · 核心章节</p>
+            <h1><span class="title-prefix">终「</span>向渊行<span class="title-prefix">」</span></h1>
+            <div class="hero-subline">
+              <strong>版本内容实时日历</strong>
+              <span>VER. 26.07.11 LIVE</span>
+            </div>
+            <p class="hero-description">
+              所有时间按北京时间（UTC+8）展示。活动状态与剩余时间会在页面内自动更新。
+            </p>
+          </div>
+
+          <aside class="hero-status" aria-label="版本实时概览">
+            <div class="status-kicker">NEXT MILESTONE</div>
+            <div class="next-name" id="nextEventName">正在计算下一个活动…</div>
+            <div class="countdown" id="countdown" aria-live="polite">--天 --:--:--</div>
+            <div class="status-meta">
+              <span id="beijingClock">北京时间 --:--:--</span>
+              <span id="nextEventAt">--</span>
+            </div>
+          </aside>
+        </div>
+
+        <div class="hero-watermark" aria-hidden="true">XIANGYUAN</div>
+      </header>
+
+      <main>
+        <section class="overview" aria-label="版本概览">
+          <article class="metric metric-accent">
+            <span class="metric-label">进行中</span>
+            <strong id="activeCount">0</strong>
+            <small>ACTIVE EVENTS</small>
+          </article>
+          <article class="metric">
+            <span class="metric-label">即将开始</span>
+            <strong id="upcomingCount">0</strong>
+            <small>UPCOMING</small>
+          </article>
+          <article class="metric">
+            <span class="metric-label">版本收束</span>
+            <strong>09.02</strong>
+            <small>2026 · 06:00</small>
+          </article>
+          <article class="metric metric-wide">
+            <span class="metric-label">当前阶段</span>
+            <strong id="phaseLabel">庆典预热</strong>
+            <small id="phaseDescription">距离首批活动开放还有一段时间</small>
+          </article>
+        </section>
+
+        <section class="calendar-section" aria-labelledby="calendarTitle">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">01 / SCHEDULE</p>
+              <h2 id="calendarTitle">版本内容时间轴</h2>
+              <p>拖动横向时间轴查看完整日程，点击活动条查看详细时间。</p>
+            </div>
+            <div class="legend" aria-label="活动状态图例">
+              <span><i class="legend-dot live"></i>进行中</span>
+              <span><i class="legend-dot soon"></i>即将开始</span>
+              <span><i class="legend-dot ended"></i>已结束</span>
+            </div>
+          </div>
+
+          <div class="calendar-toolbar">
+            <div class="filters" id="filters" aria-label="按活动类型筛选"></div>
+            <div class="view-actions">
+              <label class="zoom-control">
+                <span>时间轴密度</span>
+                <input id="zoomRange" type="range" min="22" max="52" value="34" step="2" />
+              </label>
+              <button class="toolbar-button" id="jumpNow" type="button">定位现在</button>
+            </div>
+          </div>
+
+          <div class="timeline-frame">
+            <div class="timeline-scroll" id="timelineScroll" tabindex="0" aria-label="活动日历横向时间轴">
+              <div class="timeline" id="timeline">
+                <div class="timeline-corner">
+                  <span>BEIJING TIME</span>
+                  <strong>UTC+8</strong>
+                </div>
+                <div class="date-axis" id="dateAxis"></div>
+                <div class="timeline-body" id="timelineBody"></div>
+                <div class="now-line" id="nowLine" aria-hidden="true">
+                  <span id="nowLineLabel">现在</span>
+                </div>
+              </div>
+            </div>
+            <div class="scroll-hint" id="scrollHint" aria-hidden="true">
+              <span>横向拖动</span><b>→</b>
+            </div>
+          </div>
+        </section>
+
+        <section class="agenda-section" aria-labelledby="agendaTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="section-index">02 / LIVE AGENDA</p>
+              <h2 id="agendaTitle">接下来发生什么</h2>
+            </div>
+            <div class="agenda-date" id="agendaDate">--</div>
+          </div>
+          <div class="agenda-grid" id="agendaGrid"></div>
+        </section>
+
+        <section class="notes">
+          <div class="notes-mark" aria-hidden="true">!</div>
+          <div>
+            <strong>日程说明</strong>
+            <p>
+              页面依据「向渊行」版本内容时间轴整理；“常驻开放”的项目只标记开放时刻。若游戏内时间与页面不一致，请以官方公告和游戏内实际时间为准。
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>ARKNIGHTS: ENDFIELD · COMMUNITY CALENDAR</span>
+        <span>数据更新时间 <time id="updatedAt">--</time></span>
+      </footer>
+    </div>
+
+    <dialog class="event-dialog" id="eventDialog">
+      <button class="dialog-close" id="dialogClose" type="button" aria-label="关闭详情">×</button>
+      <div class="dialog-visual" id="dialogVisual" aria-hidden="true"><b>◇</b></div>
+      <div class="dialog-category" id="dialogCategory">活动</div>
+      <h3 id="dialogTitle">活动名称</h3>
+      <p class="dialog-related" id="dialogRelated" hidden></p>
+      <div class="dialog-status" id="dialogStatus"></div>
+      <dl>
+        <div><dt>开始</dt><dd id="dialogStart">--</dd></div>
+        <div><dt>结束</dt><dd id="dialogEnd">--</dd></div>
+      </dl>
+      <p id="dialogDescription"></p>
+      <p class="dialog-source-note" id="dialogSourceNote" hidden></p>
+    </dialog>
+
+    <noscript>此页面需要启用 JavaScript 才能计算实时活动状态。</noscript>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+ssh.secret
+id_ed25519*
+
+# Logs and editor state
+*.log
+.cursor/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
