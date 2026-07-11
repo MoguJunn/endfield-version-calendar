@@ -2,8 +2,24 @@
   "name": "endfield-version-calendar",
   "version": "1.0.0",
   "description": "按北京时间实时展示《明日方舟：终末地》版本活动的独立静态日历。",
+  "license": "MIT",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoguJunn/endfield-version-calendar.git"
+  },
+  "homepage": "https://endfield-version-calendar.vercel.app",
+  "bugs": {
+    "url": "https://github.com/MoguJunn/endfield-version-calendar/issues"
+  },
+  "keywords": [
+    "arknights-endfield",
+    "endfield",
+    "event-calendar",
+    "timeline",
+    "static-site"
+  ],
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
     "build": "node scripts/build.mjs",

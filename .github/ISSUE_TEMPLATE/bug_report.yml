@@ -1,0 +1,46 @@
+name: 页面问题
+description: 报告可以稳定复现的页面、交互或日程显示问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 感谢反馈。日程错误请务必附上可信来源和北京时间。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 说明实际结果与预期结果。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 点击……
+        3. 观察到……
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 浏览器与设备
+      placeholder: Chrome 版本、Windows / Android / iOS、屏幕尺寸
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: 日程来源（如适用）
+      description: 如果是活动名称或时间错误，请提供官方公告或可信整理来源。
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或补充信息

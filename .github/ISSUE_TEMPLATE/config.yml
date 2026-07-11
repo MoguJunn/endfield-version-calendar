@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 私密安全报告
+    url: https://github.com/MoguJunn/endfield-version-calendar/security/advisories/new
+    about: 请勿在公开 Issue 中披露尚未修复的安全问题。
+  - name: 在线日历
+    url: https://endfield-version-calendar.vercel.app
+    about: 打开当前生产版本，确认问题是否仍然存在。
