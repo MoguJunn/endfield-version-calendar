@@ -11,6 +11,11 @@ const outputRoot = path.join(root, "assets", "fonts", "harmony");
 const family = "Harmony Sans App";
 const version = "harmony-os-sans-sc-calendar-v1";
 const generatedDebugArtifacts = ["index.html", "index.proto", "reporter.bin"];
+const forceRebuild = process.env.FORCE_FONT_REBUILD === "1";
+const timeoutMs = Math.max(
+  10_000,
+  Number.parseInt(process.env.FONT_BUILD_TIMEOUT_MS || "120000", 10) || 120_000,
+);
 
 const jobs = [
   { key: "sc-medium", weight: "400 600", sourceFile: "HarmonyOS_Sans_SC_Medium.ttf" },
@@ -35,6 +40,7 @@ function findSource(archive, sourceFile) {
 }
 
 async function isCurrent(job, sourceHash) {
+  if (forceRebuild) return false;
   if (!existsSync(resultCssPath(job.key)) || !existsSync(metaPath(job.key))) return false;
   try {
     const meta = JSON.parse(await readFile(metaPath(job.key), "utf8"));
@@ -49,18 +55,11 @@ async function isCurrent(job, sourceHash) {
   }
 }
 
-async function buildJob(job, sourceBuffer) {
-  const sourceHash = createHash("sha256").update(sourceBuffer).digest("hex");
-  if (await isCurrent(job, sourceHash)) {
-    console.log(`[fonts] Reusing ${job.key} (${job.weight}) from ${job.sourceFile}`);
-    return;
-  }
-
+async function buildJob(job, sourceBuffer, sourceHash) {
   const outDir = path.join(outputRoot, job.key);
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
 
-  const { fontSplit } = await import("cn-font-split");
   await fontSplit({
     input: sourceBuffer,
     outDir,
@@ -99,10 +98,47 @@ async function buildJob(job, sourceBuffer) {
   console.log(`[fonts] Built ${job.key} (${job.weight}) from ${job.sourceFile}`);
 }
 
-const archiveBuffer = await readFile(archivePath);
-const archive = unzipSync(new Uint8Array(archiveBuffer));
-await mkdir(outputRoot, { recursive: true });
+let fontSplit;
 
-for (const job of jobs) {
-  await buildJob(job, findSource(archive, job.sourceFile));
+async function main() {
+  const watchdog = setTimeout(() => {
+    console.error(`[fonts] Timed out after ${timeoutMs}ms; terminating stalled font build.`);
+    process.exit(1);
+  }, timeoutMs);
+  watchdog.unref();
+
+  try {
+    const archiveBuffer = await readFile(archivePath);
+    const archive = unzipSync(new Uint8Array(archiveBuffer));
+    await mkdir(outputRoot, { recursive: true });
+    const pendingJobs = [];
+
+    for (const job of jobs) {
+      const sourceBuffer = findSource(archive, job.sourceFile);
+      const sourceHash = createHash("sha256").update(sourceBuffer).digest("hex");
+      if (await isCurrent(job, sourceHash)) {
+        console.log(`[fonts] Reusing ${job.key} (${job.weight}) from ${job.sourceFile}`);
+      } else {
+        pendingJobs.push({ job, sourceBuffer, sourceHash });
+      }
+    }
+
+    if (pendingJobs.length > 0) {
+      ({ fontSplit } = await import("cn-font-split"));
+      for (const pending of pendingJobs) {
+        await buildJob(pending.job, pending.sourceBuffer, pending.sourceHash);
+      }
+    }
+  } finally {
+    clearTimeout(watchdog);
+  }
+}
+
+try {
+  await main();
+  await new Promise((resolve) => setImmediate(resolve));
+  process.exit(0);
+} catch (error) {
+  console.error("[fonts] Build failed:", error);
+  process.exit(1);
 }
