@@ -9,7 +9,9 @@
       content="《明日方舟：终末地》「向渊行」版本活动实时日历与时间轴"
     />
     <title>「向渊行」版本实时日历</title>
+    <script src="./theme.js"></script>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./theme.css" />
   </head>
   <body>
     <div class="page-shell">
@@ -44,13 +46,29 @@
               ><strong>GitHub</strong><span>OPEN SOURCE ↗</span></a>
               <a
                 class="project-link project-link-api"
-                href="#api-docs"
-              ><strong>API 文档</strong><span>PUBLIC API ↓</span></a>
+                href="./api-docs.html"
+              ><strong>API 文档</strong><span>PUBLIC API →</span></a>
             </div>
             <span class="sync-state" id="syncState"><i></i><span>正在连接主站数据</span></span>
-            <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
-              <span class="theme-icon" aria-hidden="true">◐</span>
-            </button>
+            <div class="theme-picker" data-theme-picker>
+              <button
+                class="theme-trigger"
+                id="themeToggle"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-label="主题：跟随系统"
+                data-theme-trigger
+              >
+                <span aria-hidden="true" data-theme-icon>▣</span>
+                <span class="visually-hidden" data-theme-label>主题：跟随系统</span>
+              </button>
+              <div class="theme-menu" role="menu" aria-label="选择主题">
+                <button class="theme-option" type="button" role="menuitemradio" aria-checked="true" data-theme-option="system"><span class="theme-option-icon" aria-hidden="true">▣</span><span>跟随系统</span></button>
+                <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="light"><span class="theme-option-icon" aria-hidden="true">☀</span><span>亮色</span></button>
+                <button class="theme-option" type="button" role="menuitemradio" aria-checked="false" data-theme-option="dark"><span class="theme-option-icon" aria-hidden="true">☾</span><span>暗色</span></button>
+              </div>
+            </div>
           </div>
         </nav>
 
@@ -200,8 +218,8 @@
               <p>免密、只读并允许跨域调用，返回日历页面使用的最终合并活动数据。</p>
             </div>
             <div class="api-docs-links">
-              <a href="./docs/API.md" target="_blank" rel="noopener noreferrer">完整接口说明 ↗</a>
-              <a href="./openapi.json" target="_blank" rel="noopener noreferrer">OpenAPI 3.1 ↗</a>
+              <a href="./api-docs.html">完整接口说明 →</a>
+              <a href="./openapi.json" download>下载 OpenAPI 3.1 ↓</a>
             </div>
           </div>
 

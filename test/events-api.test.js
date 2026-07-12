@@ -83,6 +83,18 @@ test("GET 支持版本、分类、状态和时间范围筛选", async () => {
   assert.equal(JSON.stringify(body).includes("private-user"), false);
 });
 
+test("本地开发接口使用 HTTP 生成同源活动图片地址", async () => {
+  const response = createResponse();
+  await makeHandler()({
+    method: "GET",
+    url: "/api/v1/events?version=1&category=limited",
+    headers: { host: "127.0.0.1:4178" },
+  }, response);
+  const body = JSON.parse(response.body);
+  assert.equal(response.statusCode, 200);
+  assert.equal(body.data.events[0].image, "http://127.0.0.1:4178/assets/live.png");
+});
+
 test("默认 all 与逗号分类返回稳定 v1 数据结构", async () => {
   const response = createResponse();
   await makeHandler()({ method: "GET", url: "/api/v1/events?category=limited,operator", headers: {} }, response);

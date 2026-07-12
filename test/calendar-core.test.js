@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  buildEventsForVersion,
   buildSeamlessEvents,
   fallbackVersions,
   filterEvents,
@@ -44,6 +45,26 @@ test("跨版本事件按卡池合并并保留策划活动", () => {
   assert.equal(events.length, 1);
   assert.equal(events[0].id, "curated");
   assert.equal(events[0].title, "「数据库标题」特许寻访");
+});
+
+test("远端空视觉字段不会覆盖仓库内活动图片", () => {
+  const localEvent = rawEvents.find((event) => event.id === "war-echo-1");
+  const version = {
+    ...fallbackVersions.at(-1),
+    content: {
+      activitiesComplete: true,
+      events: [{
+        ...localEvent,
+        image: null,
+        backgroundCharacter: null,
+        backgroundType: null,
+      }],
+    },
+  };
+
+  const merged = buildEventsForVersion(version)
+    .find((event) => event.id === localEvent.id);
+  assert.equal(merged.image, localEvent.image);
 });
 
 test("状态边界、公开序列化和筛选保持一致", () => {

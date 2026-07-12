@@ -308,6 +308,10 @@ function renderFilters() {
 }
 
 function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
+  if (eventViewportFrame) {
+    window.cancelAnimationFrame(eventViewportFrame);
+    eventViewportFrame = 0;
+  }
   const shouldAnimate = animate && !timelineIntroPlayed;
   elements.timeline.classList.toggle("play-timeline-intro", shouldAnimate);
   elements.timelineBody.innerHTML = "";
@@ -763,19 +767,6 @@ function setupDragScroll() {
     });
   };
   window.addEventListener("resize", refreshTimelineViewport, { passive: true });
-}
-
-function setupTheme() {
-  const saved = localStorage.getItem("endfield-calendar-theme");
-  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  if (saved === "dark" || (!saved && preferredDark)) {
-    document.documentElement.dataset.theme = "dark";
-  }
-  document.querySelector("#themeToggle").addEventListener("click", () => {
-    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = nextTheme;
-    localStorage.setItem("endfield-calendar-theme", nextTheme);
-  });
 }
 
 function setupMotion() {
@@ -1392,17 +1383,10 @@ function applyVersionSnapshot(snapshot) {
   return renderSeamlessCalendar(selectedVersion.versionKey, { scroll: false });
 }
 
-function redrawAfterDatabaseSync() {
-  lastAgendaSignature = "";
-  renderTimeline();
-  updateLiveState();
-}
-
 async function loadMainSiteData() {
   try {
     const payload = await fetchPublicCalendar();
     if (applyPublicCalendar(payload)) {
-      redrawAfterDatabaseSync();
       const sourceLabel = payload.source?.mode === "origin"
         ? "公开活动 API 已同步"
         : payload.source?.mode === "partial"
@@ -1423,7 +1407,6 @@ async function loadMainSiteData() {
     snapshot = snapshotResult?.data?.versionCalendar;
     hasMultiVersionPayload = Array.isArray(snapshot?.versions) && snapshot.versions.length > 1;
     if (applyVersionSnapshot(snapshot)) {
-      redrawAfterDatabaseSync();
       setSyncState(hasMultiVersionPayload ? "主站版本数据库已同步" : "正在补充历史版本", "synced");
       document.querySelector("#updatedAt").textContent = snapshot.updatedAt
         ? `${fullDateFormatter.format(new Date(snapshot.updatedAt))} · 数据库修订 ${snapshot.revision}`
@@ -1454,7 +1437,6 @@ async function loadMainSiteData() {
     applyPoolNames(poolNames);
     applyPoolCatalog(poolRows);
     applyLegacyCatalogToVersions(poolRows, characterRows);
-    redrawAfterDatabaseSync();
     setSyncState("历史版本与卡池已同步", "synced");
   } catch {
     setSyncState("本地备份数据", "fallback");
@@ -1465,7 +1447,6 @@ function init() {
   document.querySelector("#updatedAt").textContent = "2026-07-11 · 日程二次核对";
   renderSeamlessCalendar(fallbackVersion.versionKey, { scroll: false });
   setupDragScroll();
-  setupTheme();
   setupMotion();
 
   elements.zoomRange.addEventListener("input", (event) => {

@@ -25,7 +25,7 @@ Endfield Version Calendar 将静态活动日程转换为可以实时浏览的网
 - 按北京时间（UTC+8）实时计算“即将开始、进行中、已结束”状态。
 - 展示下一日程节点、精确到秒的倒计时和当前时间线位置。
 - 支持活动分类筛选、时间轴缩放、拖动浏览和快速定位现在。
-- 提供活动详情弹窗、近期日程列表、明暗主题和移动端布局。
+- 提供活动详情弹窗、近期日程列表、默认跟随系统的亮暗主题和移动端布局。
 - 优先同步主站公开版本快照和规范卡池名称，失败时分级回退。
 - 提供版本化、免密且允许跨域调用的公开活动 API。
 - 支持为每项活动配置真实海报，也提供无图片时的风格化占位图。
@@ -90,7 +90,7 @@ GET https://ef-cal.mogujun.icu/api/v1/events
 curl "https://ef-cal.mogujun.icu/api/v1/events?version=5&category=operator,arsenal&status=live"
 ```
 
-响应中的 `source.mode` 会明确区分主站数据、部分回退和完整本地回退。完整字段、缓存规则、错误格式与调用示例见 [API 文档](./docs/API.md)，机器可读契约见 [OpenAPI 3.1](./openapi.json)。
+响应中的 `source.mode` 会明确区分主站数据、部分回退和完整本地回退。完整字段、缓存规则、错误格式与调用示例可在部署后的独立页面 `/api-docs` 阅读；仓库内同时保留 [Markdown 文档](./docs/API.md) 和 [OpenAPI 3.1](./openapi.json) 下载源文件。
 
 ## 维护日程
 
@@ -139,6 +139,8 @@ image: "./assets/events/op-wander.webp",
 .
 ├─ .github/              # 自动校验与协作模板
 ├─ api/                  # Vercel 公开活动 API
+├─ api-docs.html         # 可直接浏览和下载契约的独立 API 文档页
+├─ api-docs.css          # API 文档页布局与响应式样式
 ├─ assets/events/        # 可选活动图片
 ├─ docs/API.md           # API 使用文档
 ├─ lib/calendar-core.js  # 页面与 API 共用的日历数据核心
@@ -147,6 +149,7 @@ image: "./assets/events/op-wander.webp",
 ├─ calendar-config.js    # 可选的 ICP 与公安备案展示配置
 ├─ index.html            # 页面结构
 ├─ styles.css            # 主题、布局与动效
+├─ theme.js / theme.css  # 主页面与文档页共用的三态主题控件
 ├─ openapi.json          # OpenAPI 3.1 机器可读契约
 ├─ vercel.json           # Vercel 静态部署配置
 └─ package.json          # 项目信息与 npm 命令

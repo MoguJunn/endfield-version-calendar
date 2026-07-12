@@ -95,6 +95,29 @@ function resolveVersionFilter(value, versions) {
   return versions.find((version) => version.versionKey === value || String(version.versionNumber) === value) || null;
 }
 
+function requestOrigin(request) {
+  const headers = request.headers || {};
+  const host = headers["x-forwarded-host"] || headers.host || "ef-cal.mogujun.icu";
+  const forwardedProtocol = String(headers["x-forwarded-proto"] || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  if (forwardedProtocol === "http" || forwardedProtocol === "https") {
+    return `${forwardedProtocol}://${host}`;
+  }
+  if (request.socket?.encrypted) return `https://${host}`;
+
+  try {
+    const hostname = new URL(`http://${host}`).hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
+      return `http://${host}`;
+    }
+  } catch {
+    // Invalid forwarded hosts fall through to the production-safe default.
+  }
+  return `https://${host}`;
+}
+
 export function createEventsHandler({
   loadCalendarImpl = loadCalendar,
   now = () => new Date(),
@@ -146,7 +169,7 @@ export function createEventsHandler({
       const generatedAt = now();
       const requestUrl = new URL(
         request.url || "/api/v1/events",
-        `${request.headers?.["x-forwarded-proto"] || "https"}://${request.headers?.["x-forwarded-host"] || request.headers?.host || "ef-cal.mogujun.icu"}`,
+        requestOrigin(request),
       );
       const publicBaseUrl = new URL("/", requestUrl);
       const eventFilters = {

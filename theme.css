@@ -1,0 +1,112 @@
+.theme-picker {
+  position: relative;
+  z-index: 30;
+}
+
+.theme-trigger {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor, transparent 72%);
+  background: color-mix(in srgb, currentColor, transparent 94%);
+  color: inherit;
+  cursor: pointer;
+  font-size: 17px;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.theme-trigger:hover,
+.theme-picker.open .theme-trigger {
+  border-color: var(--accent, #d8ff38);
+  background: color-mix(in srgb, var(--accent, #d8ff38), transparent 88%);
+  transform: translateY(-1px);
+}
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  display: grid;
+  width: 166px;
+  padding: 6px;
+  border: 1px solid var(--line-strong, rgba(20, 23, 20, 0.3));
+  background: var(--surface-strong, #fff);
+  color: var(--ink, #141714);
+  box-shadow: var(--shadow, 0 18px 48px rgba(19, 24, 18, 0.16));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms;
+}
+
+.theme-picker.open .theme-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.theme-option {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 12px;
+  gap: 8px;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: 700 12px/1.2 var(--font-sans, sans-serif);
+  text-align: left;
+}
+
+.theme-option:hover,
+.theme-option.active {
+  background: color-mix(in srgb, var(--accent, #d8ff38), transparent 82%);
+}
+
+.theme-option::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.theme-option.active::after {
+  background: var(--accent-strong, #a9cc14);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #d8ff38), transparent 76%);
+}
+
+.theme-option-icon {
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (max-width: 480px) {
+  .theme-trigger {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-trigger,
+  .theme-menu {
+    transition: none;
+  }
+}

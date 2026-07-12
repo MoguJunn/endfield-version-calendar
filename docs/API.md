@@ -8,6 +8,8 @@
 GET https://ef-cal.mogujun.icu/api/v1/events
 ```
 
+在线阅读：[独立接口说明页面](../api-docs.html)
+
 机器可读契约：[OpenAPI 3.1](../openapi.json)
 
 ## 快速调用

@@ -9,6 +9,10 @@ const requiredFiles = [
   "styles.css",
   "app.js",
   "calendar-config.js",
+  "api-docs.html",
+  "api-docs.css",
+  "theme.js",
+  "theme.css",
   "package.json",
   "lib/calendar-core.js",
   "api/_lib/calendar-service.js",
@@ -19,6 +23,7 @@ const requiredFiles = [
   "test/calendar-core.test.js",
   "test/calendar-service.test.js",
   "test/events-api.test.js",
+  "test/theme.test.js",
   "scripts/build-font-subsets.mjs",
   "assets/events/README.md",
   "assets/fonts/harmony/sc-medium/result.css",
@@ -45,11 +50,15 @@ for (const file of requiredFiles) {
   }
 }
 
-const [html, css, appJs, siteConfig, fontBuildScript, vercelConfig, verifyWorkflow, calendarCore, apiHandler, apiService, rateLimit, openapiText] = await Promise.all([
+const [html, css, appJs, siteConfig, apiDocsHtml, apiDocsCss, themeJs, themeCss, fontBuildScript, vercelConfig, verifyWorkflow, calendarCore, apiHandler, apiService, rateLimit, openapiText] = await Promise.all([
   readFile(path.join(root, "index.html"), "utf8"),
   readFile(path.join(root, "styles.css"), "utf8"),
   readFile(path.join(root, "app.js"), "utf8"),
   readFile(path.join(root, "calendar-config.js"), "utf8"),
+  readFile(path.join(root, "api-docs.html"), "utf8"),
+  readFile(path.join(root, "api-docs.css"), "utf8"),
+  readFile(path.join(root, "theme.js"), "utf8"),
+  readFile(path.join(root, "theme.css"), "utf8"),
   readFile(path.join(root, "scripts/build-font-subsets.mjs"), "utf8"),
   readFile(path.join(root, "vercel.json"), "utf8"),
   readFile(path.join(root, ".github/workflows/verify.yml"), "utf8"),
@@ -78,7 +87,12 @@ const assertions = [
   [html.includes("罗德岛蜜饼工坊"), "页面缺少日历来源致谢"],
   [html.includes('href="https://ef-gacha.mogujun.icu"'), "页面缺少抽卡主站链接"],
   [html.includes('href="https://github.com/MoguJunn/endfield-version-calendar"'), "页面缺少 GitHub 仓库链接"],
-  [html.includes('id="api-docs"') && html.includes("公开活动 API") && html.includes('href="./docs/API.md"') && html.includes('href="./openapi.json"'), "页面缺少公开 API 文档入口或摘要"],
+  [html.includes('id="api-docs"') && html.includes("公开活动 API") && html.includes('href="./api-docs.html"') && html.includes('href="./openapi.json" download'), "页面缺少独立 API 文档入口、摘要或下载按钮"],
+  [apiDocsHtml.includes("公开活动 API") && apiDocsHtml.includes('href="./openapi.json" download=') && apiDocsHtml.includes('href="./docs/API.md" download=') && apiDocsHtml.includes('id="rate-limit"') && apiDocsHtml.includes('id="cache"'), "独立 API 文档页内容或下载入口不完整"],
+  [apiDocsCss.includes(".docs-layout") && apiDocsCss.includes(".table-scroll") && apiDocsCss.includes("@media (max-width: 560px)"), "独立 API 文档页缺少正文或移动端样式"],
+  [themeJs.includes('STORAGE_KEY = "theme"') && themeJs.includes('return "system"') && themeJs.includes('prefers-color-scheme: dark') && themeJs.includes('media.addEventListener("change"') && themeJs.includes('data-theme-option'), "主题未默认跟随系统或缺少三态切换与系统变化监听"],
+  [html.includes('data-theme-option="system"') && html.includes('data-theme-option="light"') && html.includes('data-theme-option="dark"') && apiDocsHtml.includes("data-theme-picker"), "主页面或 API 文档页未共用三态主题控件"],
+  [themeCss.includes(".theme-menu") && themeCss.includes(".theme-option.active"), "共享主题控件样式不完整"],
   [html.includes('id="versionNumber"'), "页面版本号未接入动态节点"],
   [html.includes('id="versionTitle"'), "页面版本标题未接入动态节点"],
   [html.includes('id="versionSwitcher"'), "页面缺少多版本切换器"],
@@ -88,6 +102,8 @@ const assertions = [
   [html.includes('id="activityNotice"'), "页面缺少活动待补充提示"],
   [html.includes('id="versionEndDate"') && html.includes('id="versionEndTime"'), "版本收束时间未接入动态节点"],
   [appJs.includes('CALENDAR_EVENTS_API = "/api/v1/events"') && appJs.includes("fetchPublicCalendar"), "页面未优先接入站内公开活动 API"],
+  [appJs.includes("cancelAnimationFrame(eventViewportFrame)") && !appJs.includes("redrawAfterDatabaseSync"), "时间轴同步仍可能遗留旧定位帧或重复重绘"],
+  [calendarCore.includes("image: event.image || localEvent.image || null"), "远端空图片字段仍可能覆盖仓库活动海报"],
   [apiHandler.includes('Access-Control-Allow-Origin", "*"') && apiHandler.includes('apiVersion: "1"'), "公开活动 API 缺少开放 CORS 或稳定版本契约"],
   [apiHandler.includes("s-maxage=60") && apiHandler.includes("stale-while-revalidate=300"), "公开活动 API 缺少短期 CDN 缓存策略"],
   [apiHandler.includes("RATE_LIMITED") && apiHandler.includes("Retry-After") && rateLimit.includes("DEFAULT_RATE_LIMIT_MAX = 60"), "公开活动 API 缺少基础限速保护"],
@@ -181,7 +197,7 @@ for (const [passed, message] of assertions) {
   if (!passed) failures.push(message);
 }
 
-for (const file of ["app.js", "lib/calendar-core.js", "api/_lib/calendar-service.js", "api/_lib/rate-limit.js", "api/v1/events.js"]) {
+for (const file of ["app.js", "theme.js", "lib/calendar-core.js", "api/_lib/calendar-service.js", "api/_lib/rate-limit.js", "api/v1/events.js"]) {
   const syntaxCheck = spawnSync(process.execPath, ["--check", path.join(root, file)], { encoding: "utf8" });
   if (syntaxCheck.status !== 0) failures.push(`${file} 语法检查失败：${syntaxCheck.stderr.trim()}`);
 }

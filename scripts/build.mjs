@@ -4,7 +4,17 @@ import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const output = path.join(root, "dist");
-const sourceFiles = ["index.html", "styles.css", "app.js", "calendar-config.js", "openapi.json"];
+const sourceFiles = [
+  "index.html",
+  "styles.css",
+  "app.js",
+  "calendar-config.js",
+  "api-docs.html",
+  "api-docs.css",
+  "theme.js",
+  "theme.css",
+  "openapi.json",
+];
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
