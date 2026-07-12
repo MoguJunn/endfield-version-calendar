@@ -111,6 +111,7 @@ const assertions = [
   [js.includes("pool.bannerUrl"), "缺少数据库卡池背景图映射"],
   [js.includes("pool.backgroundUrl"), "缺少 UP 角色图片背景映射"],
   [js.includes("poolToEvent"), "缺少历史卡池时间轴事件生成"],
+  [js.includes("poolColorPalettes") && js.includes("poolColorTheme") && js.includes("stableStringHash"), "历史卡池缺少稳定的差异化配色"],
   [js.includes("fallbackVersions"), "缺少旧接口下的多版本备份"],
   [js.includes("activitiesComplete"), "缺少旧版本活动完整度处理"],
   [js.includes("selectVersion"), "缺少版本切换与时间轴分段逻辑"],

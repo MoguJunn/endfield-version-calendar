@@ -1338,9 +1338,58 @@ function applyLegacyCatalogToVersions(poolRows, characterRows) {
   return renderSeamlessCalendar(selectedVersionKey, { scroll: false });
 }
 
+const poolColorPalettes = Object.freeze({
+  operator: Object.freeze([
+    "#287f91",
+    "#4f65ad",
+    "#8d4f91",
+    "#ad5061",
+    "#347866",
+    "#8a6234",
+    "#6d59a1",
+    "#3c7098",
+    "#a34f3f",
+    "#607a3e",
+  ]),
+  arsenal: Object.freeze([
+    "#7e5a2e",
+    "#6e4e88",
+    "#356d72",
+    "#914b56",
+    "#555f8d",
+    "#87682f",
+    "#76546b",
+    "#416b88",
+    "#70653b",
+    "#754f43",
+  ]),
+});
+
+function stableStringHash(value) {
+  let hash = 2166136261;
+  for (const character of String(value || "")) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function poolColorTheme(pool, category) {
+  const palette = poolColorPalettes[category] || poolColorPalettes.operator;
+  const seed = [pool.poolId, pool.name, pool.startsAt].filter(Boolean).join(":");
+  const color = palette[stableStringHash(seed) % palette.length];
+  const [red, green, blue] = color.slice(1).match(/.{2}/gu).map((part) => Number.parseInt(part, 16));
+  const luminance = (red * 0.299 + green * 0.587 + blue * 0.114) / 255;
+  return {
+    color,
+    eventInk: luminance > 0.62 ? "#151915" : "#ffffff",
+  };
+}
+
 function poolToEvent(pool) {
   const category = pool.type === "arsenal" ? "arsenal" : "operator";
   const name = cleanDatabasePoolName(pool.name);
+  const colorTheme = poolColorTheme(pool, category);
   return {
     id: `pool-${pool.poolId}`,
     poolId: pool.poolId,
@@ -1348,7 +1397,7 @@ function poolToEvent(pool) {
     title: category === "operator" ? `「${name}」特许寻访` : `「${name}」`,
     start: pool.startsAt,
     end: pool.endsAt,
-    color: category === "operator" ? "#43aebc" : "#8f4bd6",
+    ...colorTheme,
     symbol: category === "operator" ? "访" : "武",
     visual: category,
     image: resolveMainSiteAssetUrl(pool.backgroundUrl || pool.bannerUrl),
