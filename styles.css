@@ -85,6 +85,7 @@ input:focus-visible,
 .event-update-pin:focus-visible,
 .source-credit:focus-visible,
 .project-links a:focus-visible,
+.api-docs a:focus-visible,
 footer a:focus-visible {
   outline: 3px solid var(--accent-strong);
   outline-offset: 3px;
@@ -1352,6 +1353,155 @@ main {
   color: var(--muted);
 }
 
+.api-docs {
+  position: relative;
+  margin-top: 58px;
+  padding: 30px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-top: 5px solid var(--accent-strong);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 91%), transparent 45%),
+    var(--surface);
+}
+
+.api-docs::after {
+  content: "API";
+  position: absolute;
+  right: 18px;
+  bottom: -34px;
+  color: color-mix(in srgb, var(--ink), transparent 94%);
+  font: 900 128px/1 "Barlow Condensed", sans-serif;
+  pointer-events: none;
+}
+
+.api-docs-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 24px;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.api-docs-heading h2 {
+  margin: 5px 0 7px;
+  font-size: clamp(25px, 3vw, 38px);
+}
+
+.api-docs-heading p:last-child,
+.api-endpoint-card p,
+.api-example-card p,
+.api-policy {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.api-docs-heading p:last-child {
+  margin: 0;
+}
+
+.api-docs-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.api-docs-links a {
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-size: 11px;
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.api-docs-links a:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent);
+  transform: translateY(-2px);
+}
+
+.api-docs-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.api-endpoint-card,
+.api-example-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+}
+
+.api-endpoint-card > span,
+.api-example-card > span {
+  display: inline-block;
+  margin-bottom: 11px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.api-endpoint-card .api-method {
+  padding: 4px 7px;
+  background: var(--accent-strong);
+  color: #111311;
+  letter-spacing: 0.08em;
+}
+
+.api-endpoint-card code,
+.api-example-card code {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  color: var(--ink);
+  font: 700 13px/1.7 Consolas, "Courier New", monospace;
+  white-space: nowrap;
+}
+
+.api-endpoint-card p,
+.api-example-card p {
+  margin: 9px 0 0;
+}
+
+.api-parameter-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.api-parameter-list span {
+  padding: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.api-parameter-list code {
+  display: block;
+  color: var(--ink);
+  font: 700 12px/1.5 Consolas, "Courier New", monospace;
+}
+
+.api-policy {
+  position: relative;
+  z-index: 1;
+  margin: 15px 0 0;
+}
+
 .notes {
   display: flex;
   gap: 18px;
@@ -2259,6 +2409,53 @@ footer,
 
   .footer-record-divider {
     display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .project-links .project-link-api {
+    display: none;
+  }
+
+  .api-docs {
+    padding: 24px;
+  }
+
+  .api-docs-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .api-docs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .api-parameter-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .api-docs {
+    padding: 20px 16px;
+  }
+
+  .api-docs-links,
+  .api-docs-links a {
+    width: 100%;
+  }
+
+  .api-docs-links a {
+    text-align: center;
+  }
+
+  .api-parameter-list {
+    grid-template-columns: 1fr;
+  }
+
+  .api-endpoint-card code,
+  .api-example-card code {
+    font-size: 11px;
   }
 }
 

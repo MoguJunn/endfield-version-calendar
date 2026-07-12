@@ -27,6 +27,7 @@ Endfield Version Calendar 将静态活动日程转换为可以实时浏览的网
 - 支持活动分类筛选、时间轴缩放、拖动浏览和快速定位现在。
 - 提供活动详情弹窗、近期日程列表、明暗主题和移动端布局。
 - 优先同步主站公开版本快照和规范卡池名称，失败时分级回退。
+- 提供版本化、免密且允许跨域调用的公开活动 API。
 - 支持为每项活动配置真实海报，也提供无图片时的风格化占位图。
 - 尊重 `prefers-reduced-motion`，为减少动态效果的系统设置提供降级体验。
 
@@ -52,31 +53,48 @@ npm run dev
 
 | 命令 | 用途 |
 | --- | --- |
-| `npm run dev` | 启动本地静态服务器 |
-| `npm test` | 检查页面结构、关键日程和 JavaScript 语法 |
+| `npm run dev` | 启动页面与本地 `/api/v1/events` 服务 |
+| `npm test` | 检查数据核心、API 契约、页面结构和 JavaScript 语法 |
 | `npm run build` | 将可部署文件生成到 `dist/` |
 
 ## 数据同步与离线回退
 
 ```text
-主站 version_calendar 快照
-          ↓ 失败
-主站 pool_catalog 卡池目录
-          ↓ 失败
-app.js 内置版本快照
+页面请求站内 /api/v1/events
+          ↓ 服务端合并
+主站 version_calendar → pool_catalog / characters → 共享核心内置快照
+          ↓ 站内 API 不可用
+浏览器原有主站直连链路 → 共享核心内置快照
 ```
 
-页面读取主站公开接口 `https://ef-gacha.mogujun.icu/api/stats`：
+页面优先读取同源的 `/api/v1/events`，由服务端请求主站公开接口 `https://ef-gacha.mogujun.icu/api/stats`：
 
 1. 优先请求 `type=version_calendar`，同步当前启用的版本快照与规范卡池名称。
-2. 快照不可用时请求 `type=pool_catalog`，只同步卡池名称。
-3. 网络或主站不可用时使用 `app.js` 中的本地数据，不阻塞页面加载。
+2. 快照不可用时请求 `type=pool_catalog` 和 `type=characters`，补齐历史卡池和图片。
+3. 主站不可用时，接口使用 `lib/calendar-core.js` 的内置版本与活动并标记为 `fallback`。
+4. 非 Vercel 静态托管没有站内 API 时，浏览器仍保留原有主站直连和本地回退，不阻塞页面加载。
 
-前端仓库不包含主站数据库、服务端密钥或内部部署配置。新的部署域名如需读取主站接口，应由主站维护者加入跨域允许来源。
+日历接口只读取主站公开 API，不直接连接 Supabase，也不包含主站数据库密钥或内部部署配置。
+
+## 公开活动 API
+
+生产环境提供与日历页面使用相同合并规则的公开接口：
+
+```text
+GET https://ef-cal.mogujun.icu/api/v1/events
+```
+
+接口只支持读取，无需 API Key，并允许第三方网站跨域调用。可按版本、活动分类、实时状态和 ISO 8601 时间区间筛选：
+
+```bash
+curl "https://ef-cal.mogujun.icu/api/v1/events?version=5&category=operator,arsenal&status=live"
+```
+
+响应中的 `source.mode` 会明确区分主站数据、部分回退和完整本地回退。完整字段、缓存规则、错误格式与调用示例见 [API 文档](./docs/API.md)，机器可读契约见 [OpenAPI 3.1](./openapi.json)。
 
 ## 维护日程
 
-活动数据集中在 `app.js` 顶部的 `rawEvents` 数组。基础数据结构示例：
+活动数据集中在 `lib/calendar-core.js` 的 `rawEvents` 数组，页面与公开 API 共用这份定义。基础数据结构示例：
 
 ```js
 {
@@ -120,12 +138,16 @@ image: "./assets/events/op-wander.webp",
 ```text
 .
 ├─ .github/              # 自动校验与协作模板
+├─ api/                  # Vercel 公开活动 API
 ├─ assets/events/        # 可选活动图片
+├─ docs/API.md           # API 使用文档
+├─ lib/calendar-core.js  # 页面与 API 共用的日历数据核心
 ├─ scripts/              # 本地服务器、构建和结构检查
 ├─ app.js                # 日程数据、实时状态和交互
 ├─ calendar-config.js    # 可选的 ICP 与公安备案展示配置
 ├─ index.html            # 页面结构
 ├─ styles.css            # 主题、布局与动效
+├─ openapi.json          # OpenAPI 3.1 机器可读契约
 ├─ vercel.json           # Vercel 静态部署配置
 └─ package.json          # 项目信息与 npm 命令
 ```

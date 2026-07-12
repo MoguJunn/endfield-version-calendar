@@ -27,7 +27,8 @@
     "prebuild": "npm run fonts:prepare",
     "build": "node scripts/build.mjs",
     "pretest": "npm run fonts:prepare",
-    "test": "node scripts/verify-site.mjs"
+    "test": "node --test && node scripts/verify-site.mjs",
+    "test:api": "node --test test"
   },
   "engines": {
     "node": ">=20"

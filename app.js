@@ -1,425 +1,40 @@
+import {
+  MAIN_SITE_STATS_API,
+  buildEventsForVersion,
+  buildLegacyPoolCatalog,
+  buildSeamlessEvents as buildCoreSeamlessEvents,
+  categories,
+  cleanDatabasePoolName,
+  eventTrackType,
+  fallbackVersion,
+  fallbackVersions,
+  formatDatabasePoolTitle,
+  isLegacyWeaponPool,
+  legacyPoolSequenceKey,
+  normalizeEvents as normalizeCoreEvents,
+  normalizePoolLookupKey,
+  poolColorPalettes,
+  poolColorTheme,
+  poolOverlapsVersion,
+  poolToEvent,
+  rawEvents,
+  resolveMainSiteAssetUrl,
+  stableStringHash,
+  statusOf,
+} from "./lib/calendar-core.js";
+
 const DAY = 24 * 60 * 60 * 1000;
-const MAIN_SITE_STATS_API = "https://ef-gacha.mogujun.icu/api/stats";
+const CALENDAR_EVENTS_API = "/api/v1/events";
 const CALENDAR_SITE_CONFIG = window.ENDFIELD_CALENDAR_CONFIG || {};
 let timelineStart = new Date("2026-07-16T12:00:00+08:00");
 let timelineEnd = new Date("2026-09-02T06:00:00+08:00");
 let totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
 
-const categories = [
-  { id: "operator", name: "干员寻访", en: "OPERATOR HEADHUNTING", icon: "⌁" },
-  { id: "arsenal", name: "武库申领", en: "ARSENAL ISSUE", icon: "✕" },
-  { id: "permanent", name: "常驻活动", en: "PERMANENT CONTENT", icon: "▦" },
-  { id: "limited", name: "限时活动", en: "LIMITED EVENTS", icon: "✦" },
-  { id: "update", name: "内容更新", en: "CONTENT UPDATE", icon: "⚑", overlay: true },
-];
-
-const rawEvents = [
-  {
-    id: "op-wander",
-    poolId: "special_manual_limited_pool_ixd68v_20260716_1aogy7",
-    category: "operator",
-    title: "「临渊望北」特许寻访",
-    related: "「踏渊北眺」签到 & 作战演练",
-    start: "2026-07-16T12:00:00+08:00",
-    end: "2026-08-09T11:59:00+08:00",
-    color: "#43aebc",
-    lane: 0,
-    symbol: "渊",
-    visual: "rift",
-    description: "「向渊行」版本首期特许寻访，同期开放「踏渊北眺」签到与「作战演练」干员试用活动。",
-  },
-  {
-    id: "op-dawn",
-    poolId: "special_manual_limited_pool_1d87dz_20260809_nsisrc",
-    category: "operator",
-    title: "「晨星于此闪耀」特许寻访",
-    related: "「明耀晨星」签到 & 作战演练",
-    start: "2026-08-09T12:00:00+08:00",
-    end: "2026-09-02T06:00:00+08:00",
-    color: "#af42d7",
-    lane: 0,
-    symbol: "星",
-    visual: "star",
-    description: "版本第二期特许寻访，于 8 月 9 日中午开放，同期开放「明耀晨星」签到与「作战演练」干员试用活动。",
-  },
-  {
-    id: "weapon-years",
-    poolId: "weaponbox_manual_weapon_pool_1g47uo_20260716_7bm8em",
-    category: "arsenal",
-    title: "「军列申领」",
-    start: "2026-07-16T12:00:00+08:00",
-    end: null,
-    endLabel: "「晨星于此闪耀」后第1个特许寻访结束时",
-    color: "#48c2d5",
-    lane: 0,
-    symbol: "轮",
-    visual: "arsenal",
-    description: "版本首期武库申领。结束时间采用海报中的相对规则：于「晨星于此闪耀」后的第 1 个特许寻访结束时关闭。",
-  },
-  {
-    id: "weapon-edge",
-    poolId: "weponbox_1_3_1",
-    category: "arsenal",
-    title: "「绛结申领」",
-    start: "2026-06-05T12:00:00+08:00",
-    end: "2026-08-09T11:59:00+08:00",
-    color: "#cf1986",
-    lane: 1,
-    symbol: "锋",
-    visual: "arsenal",
-    description: "跨版本持续开放的武库申领，于 8 月 9 日中午结束。",
-  },
-  {
-    id: "weapon-red",
-    poolId: "weponbox_1_3_2",
-    category: "arsenal",
-    title: "「染赤申领」",
-    start: "2026-06-26T12:00:00+08:00",
-    end: "2026-09-02T06:00:00+08:00",
-    color: "#c7003c",
-    lane: 2,
-    symbol: "赤",
-    visual: "arsenal",
-    description: "跨越完整版本周期的武库申领。",
-  },
-  {
-    id: "weapon-pupil",
-    poolId: "weaponbox_manual_weapon_pool_4e5oi9_20260809_roujh3",
-    category: "arsenal",
-    title: "「明曜申领」",
-    start: "2026-08-09T12:00:00+08:00",
-    end: null,
-    endLabel: "「晨星于此闪耀」后第2个特许寻访结束时",
-    color: "#b54ad2",
-    lane: 1,
-    symbol: "瞳",
-    visual: "arsenal",
-    description: "版本后半程新增武库申领。结束时间采用海报中的相对规则：于「晨星于此闪耀」后的第 2 个特许寻访结束时关闭。",
-  },
-  {
-    id: "war-echo-1",
-    category: "permanent",
-    title: "「战争回响」新赛季「追忆赛季」",
-    start: "2026-07-16T12:00:00+08:00",
-    end: "2026-08-09T11:59:00+08:00",
-    color: "#df2118",
-    lane: 0,
-    symbol: "战",
-    visual: "echo",
-    image: "./assets/events/Version%205/战争回想（两赛季相同）.png",
-    description: "战争回响当前赛季，将在 8 月 9 日中午完成轮换。",
-  },
-  {
-    id: "war-echo-2",
-    category: "permanent",
-    title: "「战争回响」新赛季「谵妄赛季」",
-    start: "2026-08-09T12:00:00+08:00",
-    end: "2026-09-02T06:00:00+08:00",
-    color: "#d92222",
-    lane: 0,
-    symbol: "战",
-    visual: "echo",
-    image: "./assets/events/Version%205/战争回想（两赛季相同）.png",
-    description: "8 月 9 日开放的新一期战争回响赛季。",
-  },
-  {
-    id: "meteor-story",
-    category: "permanent",
-    title: "「如同流星飞越边界」梨诺叙事活动",
-    start: "2026-08-09T12:00:00+08:00",
-    end: null,
-    color: "#ae36e0",
-    lane: 1,
-    permanent: true,
-    symbol: "契",
-    visual: "story",
-    image: "./assets/events/Version%205/如同流星飞越边界.png",
-    description: "梨诺叙事活动于 8 月 9 日起常驻开放，无限时结束时间。",
-  },
-  {
-    id: "monument-birds",
-    category: "permanent",
-    title: "「影拓丰碑」新系列「山中见犼」",
-    start: "2026-08-06T12:00:00+08:00",
-    end: null,
-    color: "#8e2725",
-    lane: 2,
-    permanent: true,
-    symbol: "碑",
-    visual: "monument",
-    image: "./assets/events/Version%205/影拓丰碑+丰碑留名.png",
-    description: "新系列内容于 8 月 6 日中午起常驻开放。",
-  },
-  {
-    id: "monument-beast",
-    category: "permanent",
-    title: "「丰碑留名 · 兽犼」",
-    start: "2026-08-06T12:00:00+08:00",
-    end: "2026-08-20T04:00:00+08:00",
-    color: "#76312f",
-    lane: 3,
-    symbol: "兽",
-    visual: "monument",
-    image: "./assets/events/Version%205/影拓丰碑+丰碑留名.png",
-    description: "限期开放的丰碑挑战内容。",
-  },
-  {
-    id: "secret-realm",
-    category: "permanent",
-    title: "「密境行者」新空间组「六方巧境」",
-    start: "2026-08-19T12:00:00+08:00",
-    end: null,
-    color: "#526194",
-    lane: 2,
-    permanent: true,
-    symbol: "境",
-    visual: "realm",
-    image: "./assets/events/Version%205/密境行者.png",
-    description: "新空间组于 8 月 19 日中午起常驻开放。",
-  },
-  {
-    id: "secret-realm-update",
-    category: "update",
-    eventType: "content-update",
-    overlayFor: "secret-realm",
-    title: "「密境行者」内容更新",
-    start: "2026-08-26T04:00:00+08:00",
-    end: null,
-    milestone: true,
-    color: "#7181bd",
-    symbol: "更",
-    visual: "realm",
-    image: "./assets/events/Version%205/密境行者.png",
-    description: "「密境行者」于 8 月 26 日 04:00 更新活动内容。该节点为单次更新时间标记，不代表一段新的持续活动。",
-  },
-  {
-    id: "companion-gift",
-    category: "limited",
-    title: "「相伴赠礼」庆典活动",
-    start: "2026-07-16T12:00:00+08:00",
-    end: "2026-08-09T12:00:00+08:00",
-    color: "#b7b600",
-    eventInk: "#171a14",
-    lane: 0,
-    symbol: "礼",
-    visual: "gift",
-    image: "./assets/events/Version%205/相伴赠礼.png",
-    description: "版本相伴庆典赠礼，活动期间登录参与。",
-  },
-  {
-    id: "fortune",
-    category: "limited",
-    title: "「宏运连连乐」庆典活动",
-    start: "2026-07-16T12:00:00+08:00",
-    end: "2026-07-31T04:00:00+08:00",
-    color: "#d96a1f",
-    lane: 1,
-    symbol: "运",
-    visual: "festival",
-    image: "./assets/events/Version%205/宏运连连乐.png",
-    description: "版本前半程开放的庆典活动。",
-  },
-  {
-    id: "northland",
-    category: "limited",
-    title: "「北观禁土」引入活动",
-    start: "2026-07-16T12:00:00+08:00",
-    end: "2026-08-09T12:00:00+08:00",
-    color: "#9d2779",
-    lane: 2,
-    symbol: "禁",
-    visual: "northland",
-    image: "./assets/events/Version%205/北观禁土.png",
-    description: "随版本首日开放的引入活动。",
-  },
-  {
-    id: "burning-arena",
-    category: "limited",
-    title: "「炽燃！竞技大会！！」挑战活动",
-    start: "2026-07-30T12:00:00+08:00",
-    end: "2026-08-13T04:00:00+08:00",
-    color: "#9e2a2d",
-    lane: 3,
-    symbol: "竞",
-    visual: "arena",
-    image: "./assets/events/Version%205/炽燃！竞技大会！.png",
-    description: "限期竞技挑战活动，开放至 8 月 13 日凌晨。",
-  },
-  {
-    id: "sanity-supply-first",
-    category: "limited",
-    title: "「理智补给」第一期",
-    start: "2026-08-02T04:00:00+08:00",
-    end: "2026-08-09T04:00:00+08:00",
-    color: "#7e7c7a",
-    lane: 4,
-    symbol: "智",
-    visual: "supply",
-    image: "./assets/events/Version%205/理智补给通用图.png",
-    description: "活动期间每日完成指定任务，可获得理智消耗许可及应急理智加强剂等奖励。",
-  },
-  {
-    id: "roots",
-    category: "limited",
-    title: "「根脉奇境」趣味活动",
-    start: "2026-08-09T12:00:00+08:00",
-    end: "2026-09-02T06:00:00+08:00",
-    color: "#b8860b",
-    lane: 2,
-    symbol: "根",
-    visual: "roots",
-    image: "./assets/events/Version%205/根脉奇境.png",
-    description: "版本后半程趣味活动，于版本收束时结束。",
-  },
-  {
-    id: "sanity-supply-final",
-    category: "limited",
-    title: "「理智补给」第二期",
-    start: "2026-08-26T04:00:00+08:00",
-    end: "2026-09-02T04:00:00+08:00",
-    color: "#7e7c7a",
-    lane: 4,
-    symbol: "智",
-    visual: "supply",
-    image: "./assets/events/Version%205/理智补给通用图.png",
-    description: "版本末期开放的第二期理智补给，每日完成指定任务可领取补给奖励。",
-  },
-  {
-    id: "next-version-warmup",
-    category: "limited",
-    title: "新版本预热签到活动",
-    start: "2026-08-28T04:00:00+08:00",
-    startUnknown: true,
-    startLabel: "待官方公布（海报标注为 ??）",
-    end: "2026-09-02T06:00:00+08:00",
-    color: "#555b57",
-    lane: 5,
-    symbol: "签",
-    visual: "ticket",
-    sourceNote: "海报未公布开始时间，仅确认于 2026/09/02 06:00 结束；时间轴位置仅用于表现其处于版本末期。",
-    description: "版本收束前开放的新版本预热签到，开始时间待后续官方公告确认。",
-  },
-];
-
-const fallbackVersion = {
-  versionKey: "version-5",
-  versionNumber: "5",
-  revision: 1,
-  title: "向渊行",
-  startsAt: "2026-07-16T12:00:00+08:00",
-  endsAt: "2026-09-02T06:00:00+08:00",
-  content: { activitiesComplete: true, events: rawEvents },
-  pools: [],
-  poolNames: {},
-  sourceMeta: {
-    source: "https://www.bilibili.com/opus/1223774493520953353",
-    author: "罗德岛蜜饼工坊",
-  },
-};
-
-const fallbackVersions = [
-  {
-    versionKey: "version-1",
-    versionNumber: "1",
-    revision: 1,
-    title: "零号委托",
-    startsAt: "2026-01-22T03:00:00+00:00",
-    endsAt: "2026-03-12T05:57:36+08:00",
-    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
-    pools: [],
-    poolNames: {},
-  },
-  {
-    versionKey: "version-2",
-    versionNumber: "2",
-    revision: 1,
-    title: "新潮起，故渊离",
-    startsAt: "2026-03-12T04:00:00+00:00",
-    endsAt: "2026-04-17T06:00:00+08:00",
-    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
-    pools: [],
-    poolNames: {},
-  },
-  {
-    versionKey: "version-3",
-    versionNumber: "3",
-    revision: 1,
-    title: "春晓时",
-    startsAt: "2026-04-17T04:00:00+00:00",
-    endsAt: "2026-06-05T12:00:00+08:00",
-    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
-    pools: [],
-    poolNames: {},
-  },
-  {
-    versionKey: "version-4",
-    versionNumber: "4",
-    revision: 1,
-    title: "寻遗散记",
-    startsAt: "2026-06-05T04:00:00+00:00",
-    endsAt: "2026-07-16T06:00:00+08:00",
-    content: { activitiesComplete: false, emptyMessage: "活动待补充", events: [] },
-    pools: [],
-    poolNames: {},
-  },
-  fallbackVersion,
-];
-
 let versions = fallbackVersions;
 let currentVersion = fallbackVersion;
 let timelineIntroPlayed = false;
 
-function eventTrackType(event) {
-  if (event.trackType) return event.trackType;
-  if (event.category === "operator" || event.category === "arsenal") return event.category;
-  if (event.id?.startsWith("war-echo")) return "war-echo";
-  if (event.id?.startsWith("monument-")) return "monument";
-  if (event.id?.startsWith("secret-realm")) return "secret-realm";
-  if (event.id === "companion-gift" || event.id === "next-version-warmup") return "signin";
-  if (event.id?.startsWith("sanity-supply")) return "sanity-supply";
-  return event.visual || event.id || event.category;
-}
-
-function normalizeEvents(sourceEvents) {
-  const normalized = (Array.isArray(sourceEvents) ? sourceEvents : []).map((event) => {
-    const followedEvent = event.follows
-      ? sourceEvents.find((candidate) => candidate.id === event.follows)
-      : null;
-    const start = event.start ?? followedEvent?.start;
-    const end = event.end === undefined ? followedEvent?.end : event.end;
-    return {
-      ...event,
-      start,
-      end,
-      trackType: eventTrackType(event),
-      startDate: new Date(start),
-      endDate: end ? new Date(end) : null,
-    };
-  }).filter((event) => Number.isFinite(event.startDate.getTime()));
-
-  categories.filter((category) => !category.overlay).forEach((category) => {
-    const categoryEvents = normalized.filter((event) => event.category === category.id);
-    const typeOrder = [...new Set(categoryEvents.map((event) => event.trackType))];
-    let laneOffset = 0;
-
-    typeOrder.forEach((trackType) => {
-      const laneEnds = [];
-      categoryEvents
-        .filter((event) => event.trackType === trackType)
-        .sort((left, right) => left.startDate - right.startDate)
-        .forEach((event) => {
-          const eventEnd = event.endDate?.getTime() ?? timelineEnd.getTime();
-          const freeLane = laneEnds.findIndex((end) => !end || end <= event.startDate.getTime());
-          const localLane = freeLane === -1 ? laneEnds.length : freeLane;
-          event.lane = laneOffset + localLane;
-          laneEnds[localLane] = eventEnd;
-        });
-      laneOffset += Math.max(laneEnds.length, 1);
-    });
-  });
-
-  return normalized;
-}
+const normalizeEvents = (sourceEvents) => normalizeCoreEvents(sourceEvents, { timelineEnd });
 
 let events = normalizeEvents(rawEvents);
 
@@ -537,7 +152,7 @@ function getBeijingParts(date) {
   );
 }
 
-function statusOf(event, now) {
+function legacyStatusOf(event, now) {
   if (event.startUnknown) {
     return event.endDate && now >= event.endDate ? "ended" : "upcoming";
   }
@@ -1186,20 +801,20 @@ function setupMotion() {
   }, { passive: true });
 }
 
-function cleanDatabasePoolName(value) {
+function legacyCleanDatabasePoolName(value) {
   return String(value || "")
     .replace(/\s*（前瞻(?:，[^）]*)?）\s*$/u, "")
     .replace(/^「|」$/gu, "")
     .trim();
 }
 
-function formatDatabasePoolTitle(event, poolName) {
-  const name = cleanDatabasePoolName(poolName);
+function legacyFormatDatabasePoolTitle(event, poolName) {
+  const name = legacyCleanDatabasePoolName(poolName);
   if (!name) return event.title;
   return event.category === "operator" ? `「${name}」特许寻访` : `「${name}」`;
 }
 
-function resolveMainSiteAssetUrl(value) {
+function legacyResolveMainSiteAssetUrl(value) {
   const source = String(value || "").trim();
   if (!source) return null;
   try {
@@ -1209,24 +824,24 @@ function resolveMainSiteAssetUrl(value) {
   }
 }
 
-function normalizePoolLookupKey(value) {
+function legacyNormalizePoolLookupKey(value) {
   return String(value || "").trim().toLocaleLowerCase("zh-CN");
 }
 
-function legacyPoolSequenceKey(poolId) {
+function legacyLegacyPoolSequenceKey(poolId) {
   return String(poolId || "")
     .replace(/^(?:special|joint|weaponbox|weponbox)_/iu, "")
     .replace(/^manual_(?:limited|weapon)_pool_/iu, "manual_")
     .trim();
 }
 
-function isLegacyWeaponPool(pool) {
+function legacyIsLegacyWeaponPool(pool) {
   return /(?:weapon|wepon|武器|申领)/iu.test(
     `${pool?.type || ""} ${pool?.id || pool?.poolId || ""} ${pool?.name || ""}`,
   );
 }
 
-function buildLegacyPoolCatalog(poolRows, characterRows) {
+function legacyBuildLegacyPoolCatalog(poolRows, characterRows) {
   const characterLookup = new Map();
   (Array.isArray(characterRows) ? characterRows : [])
     .forEach((character) => {
@@ -1314,7 +929,7 @@ function buildLegacyPoolCatalog(poolRows, characterRows) {
   });
 }
 
-function poolOverlapsVersion(pool, version) {
+function legacyPoolOverlapsVersion(pool, version) {
   const poolStart = Date.parse(pool.startsAt || "");
   const poolEnd = Date.parse(pool.endsAt || "");
   const versionStart = Date.parse(version.startsAt || "");
@@ -1338,7 +953,7 @@ function applyLegacyCatalogToVersions(poolRows, characterRows) {
   return renderSeamlessCalendar(selectedVersionKey, { scroll: false });
 }
 
-const poolColorPalettes = Object.freeze({
+const legacyPoolColorPalettes = Object.freeze({
   operator: Object.freeze([
     "#287f91",
     "#4f65ad",
@@ -1365,7 +980,7 @@ const poolColorPalettes = Object.freeze({
   ]),
 });
 
-function stableStringHash(value) {
+function legacyStableStringHash(value) {
   let hash = 2166136261;
   for (const character of String(value || "")) {
     hash ^= character.codePointAt(0);
@@ -1374,8 +989,8 @@ function stableStringHash(value) {
   return hash >>> 0;
 }
 
-function poolColorTheme(pool, category) {
-  const palette = poolColorPalettes[category] || poolColorPalettes.operator;
+function legacyPoolColorTheme(pool, category) {
+  const palette = legacyPoolColorPalettes[category] || legacyPoolColorPalettes.operator;
   const seed = [pool.poolId, pool.name, pool.startsAt].filter(Boolean).join(":");
   const color = palette[stableStringHash(seed) % palette.length];
   const [red, green, blue] = color.slice(1).match(/.{2}/gu).map((part) => Number.parseInt(part, 16));
@@ -1386,7 +1001,7 @@ function poolColorTheme(pool, category) {
   };
 }
 
-function poolToEvent(pool) {
+function legacyPoolToEvent(pool) {
   const category = pool.type === "arsenal" ? "arsenal" : "operator";
   const name = cleanDatabasePoolName(pool.name);
   const colorTheme = poolColorTheme(pool, category);
@@ -1407,7 +1022,7 @@ function poolToEvent(pool) {
   };
 }
 
-function buildEventsForVersion(version) {
+function legacyBuildEventsForVersion(version) {
   const remoteEvents = Array.isArray(version?.content?.events) ? version.content.events : [];
   const localEvents = version.versionKey === fallbackVersion.versionKey ? rawEvents : [];
   const localById = new Map(localEvents.map((event) => [event.id, event]));
@@ -1458,7 +1073,7 @@ function buildEventsForVersion(version) {
   });
 }
 
-function buildSeamlessEvents() {
+function legacyBuildSeamlessEvents() {
   const mergedByKey = new Map();
   versions.forEach((version) => {
     buildEventsForVersion(version).forEach((event) => {
@@ -1487,6 +1102,8 @@ function buildSeamlessEvents() {
 
   return normalizeEvents([...mergedByKey.values()]);
 }
+
+const buildSeamlessEvents = () => buildCoreSeamlessEvents(versions, { timelineEnd });
 
 function floorBeijingDay(timestamp) {
   const shifted = new Date(timestamp + 8 * 3_600_000);
@@ -1658,6 +1275,51 @@ async function fetchMainSiteStats(type) {
   }
 }
 
+async function fetchPublicCalendar() {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(CALENDAR_EVENTS_API, {
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    const payload = await response.json();
+    if (!response.ok || payload?.success !== true) {
+      throw new Error(payload?.error?.message || `日历接口返回 ${response.status}`);
+    }
+    return payload;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+function applyPublicCalendar(payload) {
+  const publicVersions = Array.isArray(payload?.data?.versions) ? payload.data.versions : [];
+  const publicEvents = Array.isArray(payload?.data?.events) ? payload.data.events : [];
+  if (publicVersions.length === 0) return false;
+
+  const eventsByVersion = new Map();
+  publicEvents.forEach((event) => {
+    if (!event?.versionKey) return;
+    const grouped = eventsByVersion.get(event.versionKey) || [];
+    grouped.push(event);
+    eventsByVersion.set(event.versionKey, grouped);
+  });
+  const snapshot = {
+    activeVersionKey: payload.data.activeVersionKey,
+    versions: publicVersions.map((version) => ({
+      ...version,
+      content: {
+        activitiesComplete: version.activitiesComplete !== false,
+        events: eventsByVersion.get(version.versionKey) || [],
+      },
+      pools: [],
+      poolNames: {},
+    })),
+  };
+  return applyVersionSnapshot(snapshot);
+}
+
 function applyPoolNames(poolNames) {
   if (!poolNames || typeof poolNames !== "object") return false;
   let changed = false;
@@ -1737,6 +1399,23 @@ function redrawAfterDatabaseSync() {
 }
 
 async function loadMainSiteData() {
+  try {
+    const payload = await fetchPublicCalendar();
+    if (applyPublicCalendar(payload)) {
+      redrawAfterDatabaseSync();
+      const sourceLabel = payload.source?.mode === "origin"
+        ? "公开活动 API 已同步"
+        : payload.source?.mode === "partial"
+          ? "公开活动 API · 部分回退"
+          : "公开活动 API · 本地备份";
+      setSyncState(sourceLabel, payload.source?.mode === "origin" ? "synced" : "fallback");
+      document.querySelector("#updatedAt").textContent = fullDateFormatter.format(new Date(payload.generatedAt));
+      return;
+    }
+  } catch {
+    // 非 Vercel 静态托管或站内接口不可用时，继续使用原有主站公开接口链路。
+  }
+
   let snapshot = null;
   let hasMultiVersionPayload = false;
   try {

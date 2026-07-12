@@ -10,6 +10,15 @@ const requiredFiles = [
   "app.js",
   "calendar-config.js",
   "package.json",
+  "lib/calendar-core.js",
+  "api/_lib/calendar-service.js",
+  "api/_lib/rate-limit.js",
+  "api/v1/events.js",
+  "docs/API.md",
+  "openapi.json",
+  "test/calendar-core.test.js",
+  "test/calendar-service.test.js",
+  "test/events-api.test.js",
   "scripts/build-font-subsets.mjs",
   "assets/events/README.md",
   "assets/fonts/harmony/sc-medium/result.css",
@@ -36,7 +45,7 @@ for (const file of requiredFiles) {
   }
 }
 
-const [html, css, js, siteConfig, fontBuildScript, vercelConfig, verifyWorkflow] = await Promise.all([
+const [html, css, appJs, siteConfig, fontBuildScript, vercelConfig, verifyWorkflow, calendarCore, apiHandler, apiService, rateLimit, openapiText] = await Promise.all([
   readFile(path.join(root, "index.html"), "utf8"),
   readFile(path.join(root, "styles.css"), "utf8"),
   readFile(path.join(root, "app.js"), "utf8"),
@@ -44,7 +53,20 @@ const [html, css, js, siteConfig, fontBuildScript, vercelConfig, verifyWorkflow]
   readFile(path.join(root, "scripts/build-font-subsets.mjs"), "utf8"),
   readFile(path.join(root, "vercel.json"), "utf8"),
   readFile(path.join(root, ".github/workflows/verify.yml"), "utf8"),
+  readFile(path.join(root, "lib/calendar-core.js"), "utf8"),
+  readFile(path.join(root, "api/v1/events.js"), "utf8"),
+  readFile(path.join(root, "api/_lib/calendar-service.js"), "utf8"),
+  readFile(path.join(root, "api/_lib/rate-limit.js"), "utf8"),
+  readFile(path.join(root, "openapi.json"), "utf8"),
 ]);
+const js = `${appJs}\n${calendarCore}`;
+
+try {
+  const openapi = JSON.parse(openapiText);
+  if (!openapi.paths?.["/api/v1/events"]?.get) failures.push("OpenAPI 缺少公开活动 GET 端点");
+} catch {
+  failures.push("openapi.json 不是合法 JSON");
+}
 
 const assertions = [
   [html.includes('id="timeline"'), "页面缺少时间轴容器"],
@@ -56,6 +78,7 @@ const assertions = [
   [html.includes("罗德岛蜜饼工坊"), "页面缺少日历来源致谢"],
   [html.includes('href="https://ef-gacha.mogujun.icu"'), "页面缺少抽卡主站链接"],
   [html.includes('href="https://github.com/MoguJunn/endfield-version-calendar"'), "页面缺少 GitHub 仓库链接"],
+  [html.includes('id="api-docs"') && html.includes("公开活动 API") && html.includes('href="./docs/API.md"') && html.includes('href="./openapi.json"'), "页面缺少公开 API 文档入口或摘要"],
   [html.includes('id="versionNumber"'), "页面版本号未接入动态节点"],
   [html.includes('id="versionTitle"'), "页面版本标题未接入动态节点"],
   [html.includes('id="versionSwitcher"'), "页面缺少多版本切换器"],
@@ -64,6 +87,11 @@ const assertions = [
   [html.includes('id="zoomShortcut"') && html.includes("Ctrl") && html.includes("滚轮"), "时间轴密度条缺少快捷操作提示"],
   [html.includes('id="activityNotice"'), "页面缺少活动待补充提示"],
   [html.includes('id="versionEndDate"') && html.includes('id="versionEndTime"'), "版本收束时间未接入动态节点"],
+  [appJs.includes('CALENDAR_EVENTS_API = "/api/v1/events"') && appJs.includes("fetchPublicCalendar"), "页面未优先接入站内公开活动 API"],
+  [apiHandler.includes('Access-Control-Allow-Origin", "*"') && apiHandler.includes('apiVersion: "1"'), "公开活动 API 缺少开放 CORS 或稳定版本契约"],
+  [apiHandler.includes("s-maxage=60") && apiHandler.includes("stale-while-revalidate=300"), "公开活动 API 缺少短期 CDN 缓存策略"],
+  [apiHandler.includes("RATE_LIMITED") && apiHandler.includes("Retry-After") && rateLimit.includes("DEFAULT_RATE_LIMIT_MAX = 60"), "公开活动 API 缺少基础限速保护"],
+  [apiService.includes('fetchMainSiteStats("version_calendar"') && apiService.includes('sourceDescriptor("fallback"'), "公开活动 API 缺少主站数据源或本地回退"],
   [fontBuildScript.includes("FONT_BUILD_TIMEOUT_MS") && fontBuildScript.includes("process.exit(0)"), "字体构建缺少超时或 FFI 退出保护"],
   [html.includes('id="footerRecords"') && html.includes("calendar-config.js"), "页尾缺少可选备案配置入口"],
   [siteConfig.includes("icpNumber") && siteConfig.includes("policeNumber"), "备案配置缺少 ICP 或公安备案选项"],
@@ -153,11 +181,9 @@ for (const [passed, message] of assertions) {
   if (!passed) failures.push(message);
 }
 
-const syntaxCheck = spawnSync(process.execPath, ["--check", path.join(root, "app.js")], {
-  encoding: "utf8",
-});
-if (syntaxCheck.status !== 0) {
-  failures.push(`app.js 语法检查失败：${syntaxCheck.stderr.trim()}`);
+for (const file of ["app.js", "lib/calendar-core.js", "api/_lib/calendar-service.js", "api/_lib/rate-limit.js", "api/v1/events.js"]) {
+  const syntaxCheck = spawnSync(process.execPath, ["--check", path.join(root, file)], { encoding: "utf8" });
+  if (syntaxCheck.status !== 0) failures.push(`${file} 语法检查失败：${syntaxCheck.stderr.trim()}`);
 }
 
 if (failures.length > 0) {

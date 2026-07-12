@@ -42,6 +42,10 @@
                 target="_blank"
                 rel="noopener noreferrer"
               ><strong>GitHub</strong><span>OPEN SOURCE ↗</span></a>
+              <a
+                class="project-link project-link-api"
+                href="#api-docs"
+              ><strong>API 文档</strong><span>PUBLIC API ↓</span></a>
             </div>
             <span class="sync-state" id="syncState"><i></i><span>正在连接主站数据</span></span>
             <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
@@ -186,6 +190,44 @@
             <div class="agenda-date" id="agendaDate">--</div>
           </div>
           <div class="agenda-grid" id="agendaGrid"></div>
+        </section>
+
+        <section class="api-docs" id="api-docs" aria-labelledby="apiDocsTitle">
+          <div class="api-docs-heading">
+            <div>
+              <p class="section-index">03 / PUBLIC API</p>
+              <h2 id="apiDocsTitle">公开活动 API</h2>
+              <p>免密、只读并允许跨域调用，返回日历页面使用的最终合并活动数据。</p>
+            </div>
+            <div class="api-docs-links">
+              <a href="./docs/API.md" target="_blank" rel="noopener noreferrer">完整接口说明 ↗</a>
+              <a href="./openapi.json" target="_blank" rel="noopener noreferrer">OpenAPI 3.1 ↗</a>
+            </div>
+          </div>
+
+          <div class="api-docs-grid">
+            <article class="api-endpoint-card">
+              <span class="api-method">GET</span>
+              <code>https://ef-cal.mogujun.icu/api/v1/events</code>
+              <p>默认返回全部已整理版本、活动、角色寻访与武库申领。</p>
+            </article>
+            <article class="api-example-card">
+              <span>调用示例</span>
+              <code>fetch("https://ef-cal.mogujun.icu/api/v1/events?version=5&amp;status=live")</code>
+              <p>按 Version 5 和“进行中”状态筛选活动。</p>
+            </article>
+          </div>
+
+          <div class="api-parameter-list" aria-label="API 查询参数">
+            <span><code>version</code> 版本号或版本键</span>
+            <span><code>category</code> 一个或多个活动分类</span>
+            <span><code>status</code> upcoming / live / ended</span>
+            <span><code>from / to</code> 带时区的时间范围</span>
+          </div>
+
+          <p class="api-policy">
+            默认按客户端 IP 每 60 秒最多处理 60 次函数请求；超限返回 HTTP 429。成功响应允许共享缓存 60 秒，错误响应不会缓存。
+          </p>
         </section>
 
         <section class="notes">

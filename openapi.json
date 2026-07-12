@@ -1,0 +1,231 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Endfield Version Calendar API",
+    "version": "1.0.0",
+    "description": "《明日方舟：终末地》非官方版本活动日历公开 API。"
+  },
+  "servers": [
+    {
+      "url": "https://ef-cal.mogujun.icu",
+      "description": "生产环境"
+    }
+  ],
+  "paths": {
+    "/api/v1/events": {
+      "get": {
+        "summary": "获取最终合并后的版本活动",
+        "operationId": "getCalendarEvents",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "query",
+            "schema": { "type": "string", "default": "all" },
+            "description": "all、版本键（version-5）或版本号（5）"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "default": "all" },
+            "description": "逗号分隔的 operator、arsenal、permanent、limited、update"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "upcoming", "live", "ended"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" },
+            "description": "查询区间起点（包含）"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" },
+            "description": "查询区间终点（不包含）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功；数据可能来自上游、部分回退或完整回退",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": { "type": "string", "const": "*" }
+              },
+              "Cache-Control": { "schema": { "type": "string" } }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "查询参数非法",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "405": {
+            "description": "请求方法不支持",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "同一客户端在限速窗口内请求过多",
+            "headers": {
+              "Retry-After": {
+                "description": "建议等待秒数",
+                "schema": { "type": "integer", "minimum": 1 }
+              },
+              "RateLimit-Limit": { "schema": { "type": "integer" } },
+              "RateLimit-Remaining": { "schema": { "type": "integer", "const": 0 } },
+              "Cache-Control": { "schema": { "type": "string", "const": "no-store" } }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "无法恢复的服务端错误",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "跨域预检",
+        "operationId": "optionsCalendarEvents",
+        "responses": { "204": { "description": "预检成功" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Source": {
+        "type": "object",
+        "required": ["mode", "partial", "updatedAt"],
+        "properties": {
+          "mode": { "type": "string", "enum": ["origin", "partial", "fallback"] },
+          "partial": { "type": "boolean" },
+          "updatedAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "required": ["versionKey", "versionNumber", "title", "startsAt", "endsAt", "activitiesComplete"],
+        "properties": {
+          "versionKey": { "type": "string" },
+          "versionNumber": { "type": "string" },
+          "revision": { "type": "integer" },
+          "title": { "type": "string" },
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": ["string", "null"], "format": "date-time" },
+          "activitiesComplete": { "type": "boolean" },
+          "sourceMeta": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "required": ["id", "versionKey", "category", "title", "start", "status", "color"],
+        "properties": {
+          "id": { "type": "string" },
+          "versionKey": { "type": "string" },
+          "poolId": { "type": ["string", "null"] },
+          "category": {
+            "type": "string",
+            "enum": ["operator", "arsenal", "permanent", "limited", "update"]
+          },
+          "title": { "type": "string" },
+          "related": { "type": ["string", "null"] },
+          "start": { "type": "string", "format": "date-time" },
+          "end": { "type": ["string", "null"], "format": "date-time" },
+          "status": { "type": "string", "enum": ["upcoming", "live", "ended"] },
+          "startUnknown": { "type": "boolean" },
+          "startLabel": { "type": ["string", "null"] },
+          "endLabel": { "type": ["string", "null"] },
+          "permanent": { "type": "boolean" },
+          "milestone": { "type": "boolean" },
+          "eventType": { "type": ["string", "null"] },
+          "overlayFor": { "type": ["string", "null"] },
+          "visual": { "type": ["string", "null"] },
+          "symbol": { "type": ["string", "null"] },
+          "image": { "type": ["string", "null"], "format": "uri" },
+          "backgroundCharacter": { "type": ["string", "null"] },
+          "backgroundType": { "type": ["string", "null"] },
+          "color": { "type": "string" },
+          "eventInk": { "type": ["string", "null"] },
+          "description": { "type": ["string", "null"] },
+          "sourceNote": { "type": ["string", "null"] }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "required": ["success", "apiVersion", "generatedAt", "timeZone", "source", "data", "meta"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "apiVersion": { "type": "string", "const": "1" },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "timeZone": { "type": "string", "const": "Asia/Shanghai" },
+          "source": { "$ref": "#/components/schemas/Source" },
+          "data": {
+            "type": "object",
+            "required": ["activeVersionKey", "versions", "events"],
+            "properties": {
+              "activeVersionKey": { "type": "string" },
+              "versions": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Version" }
+              },
+              "events": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Event" }
+              }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "required": ["total", "filters"],
+            "properties": {
+              "total": { "type": "integer", "minimum": 0 },
+              "filters": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["success", "apiVersion", "error"],
+        "properties": {
+          "success": { "type": "boolean", "const": false },
+          "apiVersion": { "type": "string", "const": "1" },
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" },
+              "details": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}
