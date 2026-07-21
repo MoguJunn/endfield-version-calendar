@@ -21,3 +21,21 @@ id_ed25519*
 .vercel/
 .DS_Store
 Thumbs.db
+
+# SECURITY-LOCAL-001: additional credential and recovery formats.
+.secrets/
+*.secret
+*.key.secret
+*.api.key.json
+credentials*.json
+service-account*.json
+*.token
+*.cookie
+*.session
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bundle
