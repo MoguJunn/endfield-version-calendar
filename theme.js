@@ -57,7 +57,12 @@
     document.documentElement.classList.toggle("dark", resolved === "dark");
     document.documentElement.style.colorScheme = resolved;
     const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (themeColor) themeColor.content = resolved === "dark" ? "#101310" : "#eef0ec";
+    if (themeColor) {
+      const snow = document.documentElement.dataset.versionTheme === "snow";
+      themeColor.content = resolved === "dark"
+        ? (snow ? "#0d1426" : "#101310")
+        : (snow ? "#edf3fc" : "#eef0ec");
+    }
     updateControls();
   }
 
@@ -114,6 +119,7 @@
   media.addEventListener("change", () => {
     if (mode === "system") applyTheme();
   });
+  document.addEventListener("versionthemechange", applyTheme);
   applyTheme();
 
   if (document.readyState === "loading") {

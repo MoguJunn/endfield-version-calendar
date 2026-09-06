@@ -53,14 +53,14 @@ test("主快照不可用时用 pool_catalog 和 characters 补全", async () => 
   assert.equal(calendar.source.mode, "partial");
   assert.equal(calendar.source.partial, true);
   assert.deepEqual(new Set(calls), new Set(["version_calendar", "pool_catalog", "characters"]));
-  assert.ok(calendar.versions.at(-1).pools.some((pool) => pool.poolId === "special-test"));
+  assert.ok(calendar.versions.find((version) => version.versionKey === "version-5").pools.some((pool) => pool.poolId === "special-test"));
 });
 
 test("所有远端读取失败时返回本地版本", async () => {
   const calendar = await loadCalendar({ fetchImpl: async () => { throw new Error("offline"); } });
   assert.equal(calendar.source.mode, "fallback");
   assert.equal(calendar.source.partial, true);
-  assert.equal(calendar.versions.length, 5);
+  assert.equal(calendar.versions.length, 6);
   assert.ok(calendar.warnings.some((warning) => warning.includes("version_calendar")));
 });
 

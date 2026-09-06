@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  OFFICIAL_VERSION_CALENDAR_SOURCE,
   buildEventsForVersion,
   buildSeamlessEvents,
+  categories,
+  fallbackVersion,
   fallbackVersions,
   filterEvents,
   normalizeEvents,
@@ -13,11 +16,20 @@ import {
   statusOf,
 } from "../lib/calendar-core.js";
 
-test("本地回退包含五个版本及第五版活动", () => {
-  assert.equal(fallbackVersions.length, 5);
-  assert.equal(fallbackVersions.at(-1).versionKey, "version-5");
+test("本地回退包含六个版本及第五版历史活动", () => {
+  assert.equal(fallbackVersions.length, 6);
+  assert.equal(fallbackVersions.at(-1).versionKey, "version-6");
   assert.equal(rawEvents.length, 21);
   assert.ok(rawEvents.some((event) => event.id === "secret-realm-update"));
+  assert.equal(fallbackVersion.sourceMeta.source, OFFICIAL_VERSION_CALENDAR_SOURCE);
+  assert.equal(fallbackVersion.sourceMeta.author, "明日方舟：终末地官方");
+});
+
+test("官方视觉调整不改变公开活动分类标识", () => {
+  assert.deepEqual(
+    categories.map((category) => category.id),
+    ["operator", "arsenal", "permanent", "limited", "update"],
+  );
 });
 
 test("活动规范化解析跟随时间并按内部类型排轨", () => {
@@ -50,7 +62,7 @@ test("跨版本事件按卡池合并并保留策划活动", () => {
 test("远端空视觉字段不会覆盖仓库内活动图片", () => {
   const localEvent = rawEvents.find((event) => event.id === "war-echo-1");
   const version = {
-    ...fallbackVersions.at(-1),
+    ...fallbackVersion,
     content: {
       activitiesComplete: true,
       events: [{

@@ -8,7 +8,7 @@ import vm from "node:vm";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const themeSource = await readFile(path.join(root, "theme.js"), "utf8");
 
-function runTheme({ matches = false, stored = {} } = {}) {
+function runTheme({ matches = false, stored = {}, versionTheme = "default" } = {}) {
   const storage = new Map(Object.entries(stored));
   const media = {
     matches,
@@ -19,10 +19,11 @@ function runTheme({ matches = false, stored = {} } = {}) {
   };
   const themeColor = { content: "" };
   const documentElement = {
-    dataset: {},
+    dataset: { versionTheme },
     style: {},
     classList: { toggle() {} },
   };
+  const listeners = new Map();
   const document = {
     readyState: "complete",
     documentElement,
@@ -30,7 +31,7 @@ function runTheme({ matches = false, stored = {} } = {}) {
       return selector === 'meta[name="theme-color"]' ? themeColor : null;
     },
     querySelectorAll() { return []; },
-    addEventListener() {},
+    addEventListener(type, listener) { listeners.set(type, listener); },
   };
   const localStorage = {
     getItem(key) { return storage.get(key) ?? null; },
@@ -48,7 +49,7 @@ function runTheme({ matches = false, stored = {} } = {}) {
     Set,
   });
 
-  return { documentElement, media, storage, themeColor };
+  return { documentElement, media, storage, themeColor, listeners };
 }
 
 test("主题首次访问默认跟随系统并响应系统变化", () => {
@@ -76,4 +77,22 @@ test("旧版手动主题偏好迁移后继续覆盖系统", () => {
   result.media.matches = true;
   result.media.listener();
   assert.equal(result.documentElement.dataset.theme, "dark");
+});
+
+test("版本配色切换不改变手动亮暗偏好，浏览器主题色同步更新", () => {
+  const result = runTheme({ stored: { theme: "light" }, versionTheme: "snow" });
+  assert.equal(result.themeColor.content, "#edf3fc");
+  result.documentElement.dataset.versionTheme = "default";
+  result.listeners.get("versionthemechange")();
+  assert.equal(result.themeColor.content, "#eef0ec");
+  assert.equal(result.storage.get("theme"), "light");
+  result.media.matches = true;
+  result.media.listener();
+  assert.equal(result.documentElement.dataset.theme, "light");
+
+  const system = runTheme({ matches: true, versionTheme: "snow" });
+  assert.equal(system.themeColor.content, "#0d1426");
+  system.media.matches = false;
+  system.media.listener();
+  assert.equal(system.themeColor.content, "#edf3fc");
 });

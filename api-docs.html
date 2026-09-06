@@ -177,6 +177,8 @@ console.log(payload.data.events);</code></pre>
             </table>
           </div>
           <p>排轨位置、浏览器 <code>Date</code> 对象和数据库管理字段不会公开。</p>
+          <p><code>poolKind</code> 区分普通卡池（standard）与重构卡池（reconstruction）；重构池仍归属 operator / arsenal 分类。</p>
+          <p><code>displayEnd</code> 仅限制常驻活动条在下一版本分割线处收束，不代表内容关闭，不参与状态或时间筛选。真实结束时间以 <code>end</code> 为准。</p>
         </section>
 
         <section id="errors">

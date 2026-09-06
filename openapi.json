@@ -148,6 +148,7 @@
           "id": { "type": "string" },
           "versionKey": { "type": "string" },
           "poolId": { "type": ["string", "null"] },
+          "poolKind": { "type": ["string", "null"], "enum": ["standard", "reconstruction", null], "description": "重构池为 reconstruction，仍归属 operator 或 arsenal 分类" },
           "category": {
             "type": "string",
             "enum": ["operator", "arsenal", "permanent", "limited", "update"]
@@ -156,6 +157,7 @@
           "related": { "type": ["string", "null"] },
           "start": { "type": "string", "format": "date-time" },
           "end": { "type": ["string", "null"], "format": "date-time" },
+          "displayEnd": { "type": ["string", "null"], "format": "date-time", "description": "仅限制常驻活动条的绘制范围，不代表活动结束，不参与 status 计算" },
           "status": { "type": "string", "enum": ["upcoming", "live", "ended"] },
           "startUnknown": { "type": "boolean" },
           "startLabel": { "type": ["string", "null"] },

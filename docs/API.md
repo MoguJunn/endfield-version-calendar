@@ -109,6 +109,10 @@ console.log(payload.data.events);
 
 排轨位置、浏览器 `Date` 对象和数据库管理字段不会公开。
 
+`poolKind` 用于区分普通卡池（`standard`）和重构卡池（`reconstruction`），非卡池为 `null`；重构池继续使用 `operator` / `arsenal` 分类。正式 ID 替换手动 ID 后，按类别、名称与开池日期唯一匹配的日程会合并，并返回正式 `poolId`。
+
+`displayEnd` 为可空的 ISO 8601 时间，仅限制常驻活动条的绘制范围。它通常指向下一版本分割线，不代表游戏内容关闭，不参与 `status` 或时间范围筛选；真实结束时间仍以 `end` 为准。
+
 ## 错误响应
 
 ```json

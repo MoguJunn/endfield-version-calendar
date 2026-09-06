@@ -8,6 +8,8 @@ import {
   eventTrackType,
   fallbackVersion,
   fallbackVersions,
+  latestFallbackVersion,
+  mergeCalendarVersions,
   formatDatabasePoolTitle,
   isLegacyWeaponPool,
   legacyPoolSequenceKey,
@@ -31,7 +33,7 @@ let timelineEnd = new Date("2026-09-02T06:00:00+08:00");
 let totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
 
 let versions = fallbackVersions;
-let currentVersion = fallbackVersion;
+let currentVersion = latestFallbackVersion;
 let timelineIntroPlayed = false;
 
 const normalizeEvents = (sourceEvents) => normalizeCoreEvents(sourceEvents, { timelineEnd });
@@ -185,6 +187,12 @@ function eventStartText(event) {
 function eventStartShortText(event) {
   if (event.startUnknown) return "待公布";
   return beijingDateFormatter.format(event.startDate);
+}
+
+function eventStartBadgeText(event) {
+  if (event.startUnknown) return "??.??";
+  const { month, day } = getBeijingParts(event.startDate);
+  return `${month}.${day}`;
 }
 
 function eventEndText(event) {
@@ -358,7 +366,7 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
     categoryEvents.forEach((event, eventIndex) => {
       const visualStart = Math.max(event.startDate.getTime(), timelineStart.getTime());
       const visualEnd = Math.min(
-        event.endDate?.getTime() ?? timelineEnd.getTime(),
+        event.displayEndDate?.getTime() ?? event.endDate?.getTime() ?? timelineEnd.getTime(),
         timelineEnd.getTime(),
       );
       if (visualEnd <= visualStart) return;
@@ -383,7 +391,7 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
       button.innerHTML = `
         <span class="event-art" aria-hidden="true"><b>${event.symbol ?? "◇"}</b></span>
         <span class="event-copy">
-          <strong>${event.title} ${relatedText}</strong>
+          <strong><span class="event-date-badge${event.startUnknown ? " unknown" : ""}">${eventStartBadgeText(event)}</span>${event.title} ${relatedText}</strong>
           <small>${eventStartShortText(event)}${event.milestone ? ` · ${eventEndShortText(event)}` : ` – ${eventEndShortText(event)}`}</small>
         </span>
         <span class="event-remaining"${remainingText ? "" : " hidden"}>${remainingText}</span>
@@ -645,7 +653,7 @@ function updateVisibleEventContent() {
 
     const hiddenLeft = Math.max(visibleStart - barStart, 0);
     const visibleWidth = visibleEnd - visibleStart;
-    const visualWidth = Math.min(barWidth * 0.42, 190);
+    const visualWidth = Math.min(barWidth * 0.52, 260);
     const visualInset = Math.min(
       Math.max(visibleEnd - barStart - visualWidth, hiddenLeft),
       Math.max(barWidth - visualWidth, 0),
@@ -1112,7 +1120,11 @@ function ceilBeijingDay(timestamp) {
 
 function setSeamlessTimelineBounds() {
   const starts = versions.map((version) => Date.parse(version.startsAt || "")).filter(Number.isFinite);
-  const ends = versions.map((version) => Date.parse(version.endsAt || "")).filter(Number.isFinite);
+  const ends = [
+    ...starts,
+    ...versions.map((version) => Date.parse(version.endsAt || "")),
+    ...buildCoreSeamlessEvents(versions).map((event) => event.endDate?.getTime()),
+  ].filter(Number.isFinite);
   timelineStart = starts.length > 0
     ? new Date(floorBeijingDay(Math.min(...starts)))
     : new Date(fallbackVersion.startsAt);
@@ -1192,6 +1204,8 @@ function renderVersionSwitcher() {
 function updateVersionMetadata() {
   const title = currentVersion.title || "未命名版本";
   const versionNumber = currentVersion.versionNumber || "?";
+  document.documentElement.dataset.versionTheme = currentVersion.versionKey === "version-6" ? "snow" : "default";
+  document.dispatchEvent(new Event("versionthemechange"));
   const selectedStart = new Date(currentVersion.startsAt || timelineStart);
   const selectedEnd = new Date(currentVersion.endsAt || timelineEnd);
   const startParts = getBeijingParts(selectedStart);
@@ -1209,7 +1223,7 @@ function updateVersionMetadata() {
   elements.activityNotice.querySelector("strong").textContent = "历史活动整理中";
   elements.sourceCredit.hidden = currentVersion.versionKey !== fallbackVersion.versionKey;
   elements.calendarNote.textContent = activitiesComplete
-    ? `页面依据「${title}」版本数据库与已核对活动资料整理；若游戏内时间与页面不一致，请以官方公告和游戏内实际时间为准。`
+    ? `页面依据「${title}」版本数据库与已核对活动资料整理；常驻活动条在下一版本分割线收束，仅表示展示范围，内容仍常驻开放。若时间不一致，请以官方公告和游戏内实际时间为准。`
     : `「${title}」历史版本的角色与武器卡池已从主站数据库载入，其他活动仍待补充；跨版本卡池会在无缝总轴中连续展示。`;
   document.title = `「${title}」Version ${versionNumber} 实时日历`;
   document.querySelector('meta[name="description"]').content = `《明日方舟：终末地》Version ${versionNumber}「${title}」活动实时日历与时间轴`;
@@ -1361,7 +1375,7 @@ function applyVersionSnapshot(snapshot) {
         }
         : version;
     });
-  versions = remoteVersions
+  versions = mergeCalendarVersions(remoteVersions)
     .filter((version) => version?.versionKey && version?.startsAt)
     .sort((left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt));
   if (versions.length === 0) return false;
@@ -1376,9 +1390,9 @@ function applyVersionSnapshot(snapshot) {
   });
   const selectedVersion = versions.find((version) => (
     version.versionKey === requestedVersion || version.versionNumber === requestedVersion
-  )) || versions.find((version) => version.versionKey === snapshot.activeVersionKey)
+  )) || timeMatchedVersion
+    || versions.find((version) => version.versionKey === snapshot.activeVersionKey)
     || versions.find((version) => version.versionKey === snapshot.versionKey)
-    || timeMatchedVersion
     || versions[versions.length - 1];
   return renderSeamlessCalendar(selectedVersion.versionKey, { scroll: false });
 }
@@ -1444,8 +1458,10 @@ async function loadMainSiteData() {
 }
 
 function init() {
-  document.querySelector("#updatedAt").textContent = "2026-07-11 · 日程二次核对";
-  renderSeamlessCalendar(fallbackVersion.versionKey, { scroll: false });
+  document.querySelector("#updatedAt").textContent = "2026-08-29 · 第六版日程核对";
+  const requested = new URLSearchParams(window.location.search).get("version");
+  const initialVersion = versions.find((version) => version.versionKey === requested || version.versionNumber === requested) || latestFallbackVersion;
+  renderSeamlessCalendar(initialVersion.versionKey, { scroll: false });
   setupDragScroll();
   setupMotion();
 

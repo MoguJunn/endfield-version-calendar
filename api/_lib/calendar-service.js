@@ -2,6 +2,8 @@ import {
   MAIN_SITE_STATS_API,
   buildLegacyPoolCatalog,
   fallbackVersions,
+  latestFallbackVersion,
+  mergeCalendarVersions,
   poolOverlapsVersion,
 } from "../../lib/calendar-core.js";
 
@@ -91,7 +93,7 @@ async function loadLegacyCalendar(options) {
   return {
     source: sourceDescriptor("partial", versions, true),
     versions,
-    activeVersionKey: "version-5",
+    activeVersionKey: latestFallbackVersion.versionKey,
     warnings,
   };
 }
@@ -115,7 +117,7 @@ export async function loadCalendar({
       );
       return {
         source: sourceDescriptor(isPartial ? "partial" : "origin", snapshot.versions, isPartial),
-        versions: snapshot.versions,
+        versions: mergeCalendarVersions(snapshot.versions),
         activeVersionKey: snapshot.activeVersionKey || snapshot.active_version_key || snapshot.versions.at(-1)?.versionKey || null,
         warnings,
       };
@@ -135,7 +137,7 @@ export async function loadCalendar({
   return {
     source: sourceDescriptor("fallback", fallbackVersions, true),
     versions: cloneFallbackVersions(),
-    activeVersionKey: "version-5",
+    activeVersionKey: latestFallbackVersion.versionKey,
     warnings,
   };
 }
