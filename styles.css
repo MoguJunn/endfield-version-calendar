@@ -278,7 +278,7 @@ footer {
 
 .topbar {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   min-height: 86px;
   display: flex;
   align-items: center;
