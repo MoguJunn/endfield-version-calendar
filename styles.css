@@ -81,6 +81,35 @@
   --shadow: 0 20px 60px rgba(3, 9, 25, 0.36);
 }
 
+/* 丹青渡前瞻：宣纸米白、鎏金纹理与钴蓝时间牌。 */
+:root[data-version-theme="danqing"] {
+  --bg: #f4efdf;
+  --surface: #fffdf5;
+  --surface-strong: #ffffff;
+  --ink: #24231f;
+  --muted: #756b56;
+  --line: rgba(142, 117, 58, 0.2);
+  --line-strong: rgba(142, 117, 58, 0.4);
+  --accent: #ddc788;
+  --accent-strong: #2044cb;
+  --accent-rgb: 221, 199, 136;
+  --hero-background: linear-gradient(115deg, #25231d 0%, #3e3827 58%, #74613a 100%);
+  --category-background: #25231d;
+  --shadow: 0 18px 48px rgba(85, 68, 28, 0.12);
+}
+
+:root[data-version-theme="danqing"][data-theme="dark"] {
+  --bg: #171610;
+  --surface: #1e1c17;
+  --surface-strong: #28251c;
+  --ink: #faf5e5;
+  --muted: #bdb39a;
+  --line: rgba(221, 199, 136, 0.18);
+  --line-strong: rgba(221, 199, 136, 0.36);
+  --accent-strong: #a4b7ff;
+  --shadow: 0 20px 60px rgba(12, 10, 5, 0.36);
+}
+
 * {
   box-sizing: border-box;
   font-family: var(--font-sans) !important;

@@ -85,6 +85,9 @@ test("版本配色切换不改变手动亮暗偏好，浏览器主题色同步�
   result.documentElement.dataset.versionTheme = "default";
   result.listeners.get("versionthemechange")();
   assert.equal(result.themeColor.content, "#eef0ec");
+  result.documentElement.dataset.versionTheme = "danqing";
+  result.listeners.get("versionthemechange")();
+  assert.equal(result.themeColor.content, "#f4efdf");
   assert.equal(result.storage.get("theme"), "light");
   result.media.matches = true;
   result.media.listener();
@@ -95,4 +98,10 @@ test("版本配色切换不改变手动亮暗偏好，浏览器主题色同步�
   system.media.matches = false;
   system.media.listener();
   assert.equal(system.themeColor.content, "#edf3fc");
+  system.documentElement.dataset.versionTheme = "danqing";
+  system.listeners.get("versionthemechange")();
+  assert.equal(system.themeColor.content, "#f4efdf");
+  system.media.matches = true;
+  system.media.listener();
+  assert.equal(system.themeColor.content, "#171610");
 });

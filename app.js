@@ -1204,7 +1204,10 @@ function renderVersionSwitcher() {
 function updateVersionMetadata() {
   const title = currentVersion.title || "未命名版本";
   const versionNumber = currentVersion.versionNumber || "?";
-  document.documentElement.dataset.versionTheme = currentVersion.versionKey === "version-6" ? "snow" : "default";
+  // Adopt the announced preview palette on the latest calendar without
+  // inventing a release date or changing its underlying version content.
+  document.documentElement.dataset.versionTheme = currentVersion.versionKey === versions.at(-1)?.versionKey
+    || title.includes("丹青渡") ? "danqing" : currentVersion.versionKey === "version-6" ? "snow" : "default";
   document.dispatchEvent(new Event("versionthemechange"));
   const selectedStart = new Date(currentVersion.startsAt || timelineStart);
   const selectedEnd = new Date(currentVersion.endsAt || timelineEnd);
