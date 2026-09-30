@@ -58,10 +58,10 @@
     document.documentElement.style.colorScheme = resolved;
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      const snow = document.documentElement.dataset.versionTheme === "snow";
+      const palette = document.documentElement.dataset.versionTheme;
       themeColor.content = resolved === "dark"
-        ? (snow ? "#0d1426" : "#101310")
-        : (snow ? "#edf3fc" : "#eef0ec");
+        ? (palette === "danqing" ? "#171610" : palette === "snow" ? "#0d1426" : "#101310")
+        : (palette === "danqing" ? "#f4efdf" : palette === "snow" ? "#edf3fc" : "#eef0ec");
     }
     updateControls();
   }
