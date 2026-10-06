@@ -149,6 +149,7 @@
           "versionKey": { "type": "string" },
           "poolId": { "type": ["string", "null"] },
           "poolKind": { "type": ["string", "null"], "enum": ["standard", "reconstruction", null], "description": "重构池为 reconstruction，仍归属 operator 或 arsenal 分类" },
+          "extraSeriesPhase": { "type": ["integer", "null"], "minimum": 1, "description": "后台维护的重构系列期次，未维护时为 null；标题显示为第N期" },
           "category": {
             "type": "string",
             "enum": ["operator", "arsenal", "permanent", "limited", "update"]

@@ -111,6 +111,8 @@ console.log(payload.data.events);
 
 `poolKind` 用于区分普通卡池（`standard`）和重构卡池（`reconstruction`），非卡池为 `null`；重构池继续使用 `operator` / `arsenal` 分类。正式 ID 替换手动 ID 后，按类别、名称与开池日期唯一匹配的日程会合并，并返回正式 `poolId`。
 
+`extraSeriesPhase` 为后台维护的重构系列期次（正整数或 `null`），标题同时显示“重构寻访 · 第N期”或“重构申领 · 第N期”。未维护期次时不会推算序号；旧第六版离线备份保留第一期标注。
+
 `displayEnd` 为可空的 ISO 8601 时间，仅限制常驻活动条的绘制范围。它通常指向下一版本分割线，不代表游戏内容关闭，不参与 `status` 或时间范围筛选；真实结束时间仍以 `end` 为准。
 
 ## 错误响应

@@ -7,6 +7,26 @@ import { versionSix, versionSixEvents } from "../lib/version-six.js";
 
 const military = { poolId: "weponbox_1_4_1", name: "军列申领", type: "arsenal", startsAt: "2026-07-16T04:00:00Z", endsAt: "2026-09-30T04:00:00Z", backgroundUrl: "/avatars/weapons/test.png" };
 
+test("数据库重构子类型和期次经过公开 API 与浏览器合并后仍正确展示", () => {
+  const pools = buildLegacyPoolCatalog([
+    { id: "joint_manual_extra_pool_character", name: "祖泉的新流", type: "extra", extra_subtype: "reconstruction", extra_series_phase: 2, start_time: "2026-10-29T04:00:00Z", end_time: "2026-11-19T04:00:00Z" },
+    { id: "joint_manual_extra_pool_weapon", name: "细枝申领", type: "extra", extra_subtype: "reconstruction_claim", extra_series_phase: 2, start_time: "2026-10-29T04:00:00Z", end_time: "2026-11-19T04:00:00Z" },
+  ], []);
+  const version = { versionKey: "version-7", startsAt: "2026-10-15T04:00:00Z", endsAt: "2026-11-26T04:00:00Z", pools, content: { events: [] } };
+  const events = buildEventsForVersion(version);
+  assert.equal(events.find((event) => event.category === "operator").title, "「祖泉的新流」重构寻访 · 第2期");
+  assert.equal(events.find((event) => event.category === "arsenal").title, "「细枝申领」重构申领 · 第2期");
+  const restored = buildEventsForVersion({ ...version, pools: [], content: { resolvedPoolTimings: true, events: events.map(serializePublicEvent) } });
+  assert.deepEqual(restored.map((event) => [event.title, event.poolKind, event.extraSeriesPhase]), events.map((event) => [event.title, event.poolKind, event.extraSeriesPhase]));
+});
+
+test("旧重构池展示本地第一期，数据库维护新期次时覆盖旧标注", () => {
+  const local = versionSixEvents.find((event) => event.category === "arsenal" && event.poolKind === "reconstruction");
+  const event = buildEventsForVersion({ ...versionSix, pools: [{ poolId: local.poolId, name: "点绘申领", type: "arsenal", poolKind: "reconstruction", extraSeriesPhase: 3, startsAt: local.start, endsAt: local.end }] }).find((item) => item.poolId === local.poolId);
+  assert.equal(event.title, "「点绘申领」重构申领 · 第3期");
+  assert.equal(buildEventsForVersion(versionSix).find((item) => item.id === local.id).title, "「点绘申领」重构申领 · 第1期");
+});
+
 test("旧手动绑定被正式 ID 替换后只保留一个跨版本卡池", () => {
   const result = buildSeamlessEvents([
     { ...fallbackVersion, pools: [military], poolBindings: { "weapon-years": "weaponbox_manual_weapon_pool_1g47uo_20260716_7bm8em" } },
