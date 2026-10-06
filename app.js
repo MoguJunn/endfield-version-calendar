@@ -1052,8 +1052,9 @@ function legacyBuildEventsForVersion(version) {
       image: resolveMainSiteAssetUrl(pool.backgroundUrl || pool.bannerUrl) || event.image || null,
       backgroundCharacter: pool.backgroundCharacter || event.backgroundCharacter || null,
       backgroundType: pool.backgroundType || event.backgroundType || null,
-      start: event.start || pool.startsAt,
-      end: event.end === undefined ? pool.endsAt : event.end,
+      start: pool.startsAt !== undefined ? pool.startsAt : event.start,
+      end: pool.endsAt !== undefined ? pool.endsAt : event.end,
+      endLabel: pool.endsAt !== undefined ? null : event.endLabel,
       databasePoolName: pool.name,
     };
   });
@@ -1319,6 +1320,8 @@ function applyPublicCalendar(payload) {
       ...version,
       content: {
         activitiesComplete: version.activitiesComplete !== false,
+        // 时间已由服务端合并；恢复时不能再用本地卡池日历覆盖。
+        resolvedPoolTimings: true,
         events: eventsByVersion.get(version.versionKey) || [],
       },
       pools: [],
