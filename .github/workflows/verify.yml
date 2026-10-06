@@ -27,6 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare cn-font-split FFI runtime
+        # 与主站 CI 一致，避免 postinstall 版本查询失败后缺少字体原生库。
+        run: |
+          curl --retry 3 -fsSL -o node_modules/cn-font-split/dist/libffi-x86_64-unknown-linux-gnu.so \
+            https://github.com/KonghaYao/cn-font-split/releases/download/7.6.8/libffi-x86_64-unknown-linux-gnu.so
+          printf 'x86_64-unknown-linux-gnu@7.6.8\n' > node_modules/cn-font-split/dist/version
+
       - name: Verify site
         run: npm test
 
