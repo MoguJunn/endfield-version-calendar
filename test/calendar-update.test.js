@@ -183,7 +183,7 @@ test("客户端恢复公开 API 后仍保留数据库时间和明确空结束时
   assert.equal(restored.some((item) => item.poolId === unknownStartPool.poolId), false);
 });
 
-test("第六版主要节点、两期补给与未知签到日期正确且复用图片存在", async () => {
+test("第六版主要节点、两期补给与官方签到日期正确且图片存在", async () => {
   assert.equal(fallbackVersions.at(-1).title, "雪凇幽梦");
   for (const event of versionSixEvents) {
     assert.ok(Number.isFinite(Date.parse(event.start)));
@@ -192,5 +192,19 @@ test("第六版主要节点、两期补给与未知签到日期正确且复用�
   }
   const supply = versionSixEvents.filter((event) => event.id.startsWith("sanity-supply"));
   assert.deepEqual(supply.map((event) => event.start), ["2026-09-17T04:00:00+08:00", "2026-10-08T04:00:00+08:00"]);
-  assert.equal(versionSixEvents.find((event) => event.id === "winter-next-version-warmup").startUnknown, true);
+  const signin = versionSixEvents.find((event) => event.id === "winter-next-version-warmup");
+  assert.equal(signin.title, "「天地墨显」限时签到");
+  assert.equal(signin.start, "2026-10-08T12:00:00+08:00");
+  assert.equal(signin.end, "2026-10-15T06:00:00+08:00");
+  assert.equal(signin.startUnknown, false);
+  assert.equal(signin.startLabel, null);
+  const old = { ...signin, title: "新版本预热签到活动", start: "2026-10-12T04:00:00+08:00", startUnknown: true, startLabel: "待官方公布", image: null };
+  const merged = buildEventsForVersion({ ...versionSix, content: { events: [old] } }).find((event) => event.id === signin.id);
+  const restored = buildEventsForVersion({ ...serializePublicVersion(versionSix), pools: [], content: { resolvedPoolTimings: true, events: [serializePublicEvent(merged)] } }).find((event) => event.id === signin.id);
+  assert.equal(restored.title, signin.title);
+  assert.equal(restored.start, signin.start);
+  assert.equal(restored.end, signin.end);
+  assert.equal(restored.startUnknown, false);
+  assert.equal(restored.startLabel, null);
+  assert.match(restored.image, /heaven-earth-ink-signin\.webp$/u);
 });
