@@ -32,6 +32,18 @@ test("官方视觉调整不改变公开活动分类标识", () => {
   );
 });
 
+test("含加号的历史素材路径经 API 和浏览器合并后保持正确编码", () => {
+  const source = buildEventsForVersion(fallbackVersion).find((event) => event.id === "monument-birds");
+  assert.ok(source.image.includes("%2B"));
+  const publicEvent = serializePublicEvent(source, { origin: "https://ef-cal.mogujun.icu" });
+  const restored = normalizeEvents([publicEvent])[0];
+  assert.equal(restored.image, publicEvent.image);
+  assert.ok(!restored.image.includes("+"));
+  assert.ok(!restored.image.includes("%252B"));
+  const absolute = normalizeEvents([{ ...source, image: "https://ef-cal.mogujun.icu/assets/events/a+b.png?token=x+y" }])[0];
+  assert.equal(absolute.image, "https://ef-cal.mogujun.icu/assets/events/a%2Bb.png?token=x+y");
+});
+
 test("活动规范化解析跟随时间并避免并行活动遮挡", () => {
   const events = normalizeEvents([
     { id: "operator-a", category: "operator", start: "2026-01-01T00:00:00Z", end: "2026-01-03T00:00:00Z" },

@@ -530,6 +530,7 @@ function updateNowLine(now) {
 }
 
 function updateEventBars(now) {
+  let timeLabelsChanged = false;
   document.querySelectorAll(".event-bar").forEach((bar) => {
     const event = events.find((item) => item.id === bar.dataset.eventId);
     if (!event) return;
@@ -539,7 +540,10 @@ function updateEventBars(now) {
     const remaining = bar.querySelector(".event-remaining");
     if (remaining) {
       const text = eventRemainingText(event, now);
-      remaining.textContent = text;
+      if (remaining.textContent !== text) {
+        remaining.textContent = text;
+        timeLabelsChanged = true;
+      }
       remaining.hidden = !text;
       bar.classList.toggle("has-remaining", Boolean(text));
     }
@@ -551,6 +555,7 @@ function updateEventBars(now) {
     pin.classList.add(statusOf(event, now));
     pin.title = `${event.title}｜${statusText(event, now)}`;
   });
+  if (timeLabelsChanged) scheduleVisibleEventContent();
 }
 
 function renderAgenda(now, milestones = getMilestones(now)) {
@@ -722,6 +727,7 @@ function updateVisibleEventContent() {
     >= elements.timelineScroll.scrollWidth - elements.timelineScroll.clientWidth - 1;
   const viewStart = elements.timelineScroll.scrollLeft + labelWidth;
   const viewEnd = elements.timelineScroll.scrollLeft + elements.timelineScroll.clientWidth;
+  const compactRows = elements.timeline.classList.contains("compact-rows");
 
   const barUpdates = [];
   document.querySelectorAll(".event-bar").forEach((bar) => {
@@ -753,18 +759,28 @@ function updateVisibleEventContent() {
       Math.max(barWidth - visualWidth, 0),
     );
     const copyWidth = Math.max(visibleWidth, 20);
+    const remainingBadge = bar.querySelector(".event-remaining:not([hidden])");
+    const durationBadge = compactRows && remainingBadge ? remainingBadge : bar.querySelector(".event-duration");
+    const durationSpace = durationBadge
+      ? Math.min(durationBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 14
+      : 10;
+    const remainingSpace = !compactRows && remainingBadge
+      ? Math.min(remainingBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 10
+      : 0;
 
-    barUpdates.push({ bar, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth });
+    barUpdates.push({ bar, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth, durationSpace, remainingSpace });
   });
   document.querySelector("#timelinePrev").disabled = atStart;
   document.querySelector("#timelineNext").disabled = atEnd;
   flagUpdates.forEach(({ flag, left }) => setViewportStyle(flag, "left", `${left}px`));
-  barUpdates.forEach(({ bar, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth }) => {
+  barUpdates.forEach(({ bar, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth, durationSpace, remainingSpace }) => {
     setViewportStyle(bar, "--visible-inset", `${hiddenLeft}px`);
     setViewportStyle(bar, "--visible-right-inset", `${rightInset}px`);
     setViewportStyle(bar, "--visible-copy-width", `${copyWidth}px`);
     setViewportStyle(bar, "--visual-inset", `${visualInset}px`);
     setViewportStyle(bar, "--visual-width", `${visualWidth}px`);
+    setViewportStyle(bar, "--duration-space", `${durationSpace}px`);
+    setViewportStyle(bar, "--remaining-space", `${remainingSpace}px`);
   });
 }
 
@@ -1337,7 +1353,7 @@ function updateVersionMetadata() {
   const versionNumber = currentVersion.versionNumber || "?";
   // Adopt the announced preview palette on the latest calendar without
   // inventing a release date or changing its underlying version content.
-  document.documentElement.dataset.versionTheme = currentVersion.versionKey === versions.at(-1)?.versionKey
+  document.documentElement.dataset.versionTheme = currentVersion.versionKey === versions[versions.length - 1]?.versionKey
     || title.includes("丹青渡") ? "danqing" : currentVersion.versionKey === "version-6" ? "snow" : "default";
   document.dispatchEvent(new Event("versionthemechange"));
   const selectedStart = new Date(currentVersion.startsAt || timelineStart);
