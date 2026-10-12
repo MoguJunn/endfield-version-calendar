@@ -12,7 +12,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![最后提交](https://img.shields.io/github/last-commit/MoguJunn/endfield-version-calendar)](https://github.com/MoguJunn/endfield-version-calendar/commits/main)
 
-[在线访问](https://ef-cal.mogujun.icu/) · [抽卡主站](https://ef-gacha.mogujun.icu) · [问题反馈](https://github.com/MoguJunn/endfield-version-calendar/issues) · [参与贡献](./CONTRIBUTING.md)
+[在线访问](https://ef-cal.mogujun.icu/) · [抽卡主站](https://ef-gacha.mogujun.icu) · [问题反馈](https://github.com/MoguJunn/endfield-version-calendar/issues) · [参与贡献](./CONTRIBUTING.md) · [维护说明](./docs/MAINTENANCE.md)
 
 </div>
 
@@ -55,10 +55,13 @@ Version 5「向渊行」主要依据 [《明日方舟：终末地》官方发布
 ```bash
 git clone https://github.com/MoguJunn/endfield-version-calendar.git
 cd endfield-version-calendar
+npm ci
 npm run dev
 ```
 
 浏览器打开 <http://127.0.0.1:4178>。
+
+开发、测试与构建需安装字体处理等开发依赖；上述命令在日历仓库目录执行。`dev`、`test`、`build` 会先生成或复用字体分片，CI 额外固定下载 `cn-font-split` 7.6.8 的 Linux 原生库，具体平台要求与验证边界见 [维护说明](./docs/MAINTENANCE.md#字体构建与-ci)。
 
 常用命令：
 
@@ -140,6 +143,8 @@ Version 5 活动位于 `lib/calendar-core.js` 的 `rawEvents` 数组，Version 6
 
 所有确定时间必须使用包含 `+08:00` 的 ISO 8601 字符串，避免部署环境时区造成偏移。
 
+最近四个提交、数据库空值规则、重构期次、维护与版本开启时间、缓存及 CI 集中在 [维护说明](./docs/MAINTENANCE.md)。修改日程前按 [贡献指南](./CONTRIBUTING.md#日程数据规则) 核对来源和相关回归测试；官方活动正文及海报保留在 [官方来源记录](./assets/events/OFFICIAL_SOURCES.md)。
+
 ## 添加活动图片
 
 将有权公开再分发的图片放入 `assets/events/`，并在活动对象中配置：
@@ -160,9 +165,11 @@ image: "./assets/events/op-wander.webp",
 ├─ api-docs.css          # API 文档页布局与响应式样式
 ├─ assets/events/        # 可选活动图片
 ├─ docs/API.md           # API 使用文档
+├─ docs/MAINTENANCE.md   # 近期提交、来源、缓存与 CI 维护规则
 ├─ lib/calendar-core.js  # 页面与 API 共用的日历数据核心
+├─ lib/version-six.js    # Version 6 活动与离线备份
 ├─ scripts/              # 本地服务器、构建和结构检查
-├─ app.js                # 日程数据、实时状态和交互
+├─ app.js                # 浏览器数据读取、实时状态和交互
 ├─ calendar-config.js    # 可选的 ICP 与公安备案展示配置
 ├─ index.html            # 页面结构
 ├─ styles.css            # 主题、布局与动效

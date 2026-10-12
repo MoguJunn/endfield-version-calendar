@@ -3,6 +3,12 @@ node_modules/
 dist/
 coverage/
 assets/fonts/harmony/
+.agent-tmp/
+artifacts/
+test-results/
+playwright-report/
+*.tmp
+*.bak
 
 # Local environment and secrets
 .env
@@ -39,3 +45,5 @@ service-account*.json
 *.db
 *.dump
 *.bundle
+*.backup
+*.sql.gz
