@@ -1143,7 +1143,7 @@ main {
 .event-bar {
   position: absolute;
   left: calc(var(--start) * var(--day-width));
-  top: calc(10px + var(--lane) * 52px);
+  top: calc(10px + var(--lane) * 52px + var(--lane-extra, 0px));
   width: max(calc(var(--duration) * var(--day-width)), 20px);
   height: 44px;
   overflow: hidden;
@@ -2816,18 +2816,18 @@ footer,
 .event-update-pin {
   position: absolute;
   z-index: 8;
-  top: calc(2px + var(--lane) * 52px);
+  top: calc(58px + var(--lane) * 52px + var(--lane-extra, 0px));
   left: calc(var(--start) * var(--day-width));
   display: grid;
-  grid-template-columns: 28px max-content;
-  align-items: start;
-  min-width: 28px;
-  height: 66px;
+  grid-template-columns: 22px max-content;
+  align-items: center;
+  min-width: 22px;
+  height: 24px;
   padding: 0;
   border: 0;
   color: #fff;
   background: transparent;
-  transform: translateX(-14px);
+  transform: translateX(-11px);
   cursor: pointer;
   filter: drop-shadow(0 4px 7px rgb(10 16 20 / 26%));
 }
@@ -2835,9 +2835,9 @@ footer,
 .event-update-pin::after {
   content: "";
   position: absolute;
-  top: 25px;
-  bottom: 0;
-  left: 13px;
+  top: -4px;
+  height: 5px;
+  left: 10px;
   width: 2px;
   background: linear-gradient(var(--event-color), rgb(255 255 255 / 55%));
   box-shadow: 0 0 0 1px rgb(22 28 36 / 26%);
@@ -2848,21 +2848,22 @@ footer,
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border: 1px solid rgb(255 255 255 / 82%);
-  border-radius: 2px 2px 10px 2px;
+  border-radius: 2px;
   color: #fff;
   background: var(--event-color);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 900;
 }
 
 .event-update-pin__copy {
-  display: grid;
-  gap: 1px;
-  margin: 1px 0 0 5px;
-  padding: 4px 7px 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 4px;
+  padding: 5px 7px;
   border-left: 2px solid var(--event-color);
   color: #edf1f7;
   background: rgb(24 30 39 / 90%);

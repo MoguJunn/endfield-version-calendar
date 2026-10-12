@@ -7,6 +7,7 @@ const output = path.join(root, "dist");
 const sourceFiles = [
   "index.html",
   "styles.css",
+  "workspace.css",
   "app.js",
   "calendar-config.js",
   "api-docs.html",

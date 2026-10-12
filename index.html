@@ -1,17 +1,18 @@
 <!doctype html>
-<html lang="zh-CN" data-version-theme="snow">
+<html lang="zh-CN" data-version-theme="danqing">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#edf3fc" />
+    <meta name="theme-color" content="#f4efdf" />
     <meta
       name="description"
-      content="《明日方舟：终末地》「雪凇幽梦」版本活动实时日历与时间轴"
+      content="《明日方舟：终末地》「丹青渡」版本活动实时日历与时间轴"
     />
-    <title>「雪凇幽梦」版本实时日历</title>
+    <title>「丹青渡」版本实时日历</title>
     <script src="./theme.js"></script>
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./theme.css" />
+    <link rel="stylesheet" href="./workspace.css" />
   </head>
   <body>
     <div class="page-shell">
@@ -31,6 +32,7 @@
             </span>
           </a>
           <div class="topbar-actions">
+            <button class="workspace-info-button" id="calendarInfo" type="button">日程与说明</button>
             <div class="project-links" aria-label="项目链接">
               <a
                 class="project-link project-link-main"
@@ -74,8 +76,8 @@
 
         <div class="hero-content" id="top">
           <div class="hero-copy">
-            <p class="eyebrow"><span id="versionNumber">VERSION 6</span> <b id="versionStatusLabel">版本内容 · 实时日历</b></p>
-            <h1 id="versionTitle"><span class="title-prefix">「</span>雪凇幽梦<span class="title-prefix">」</span></h1>
+            <p class="eyebrow"><span id="versionNumber">VERSION 7</span> <b id="versionStatusLabel">版本内容 · 实时日历</b></p>
+            <h1 id="versionTitle"><span class="title-prefix">「</span>丹青渡<span class="title-prefix">」</span></h1>
             <div class="hero-subline">
               <strong>版本内容实时日历</strong>
               <span id="versionLiveLabel">DATABASE SYNC</span>
@@ -166,6 +168,7 @@
           <div class="calendar-toolbar">
             <div class="filters" id="filters" aria-label="按活动大类筛选"></div>
             <div class="view-actions">
+              <span class="pan-hint">滚轮左右浏览</span>
               <label class="zoom-control">
                 <span class="zoom-label">时间轴密度</span>
                 <span class="zoom-shortcut" id="zoomShortcut">
@@ -174,13 +177,14 @@
                 <input
                   id="zoomRange"
                   type="range"
-                  min="22"
-                  max="52"
+                  min="3"
+                  max="80"
                   value="34"
-                  step="2"
+                  step="0.1"
                   aria-describedby="zoomShortcut"
                 />
               </label>
+              <button class="toolbar-button" id="fitVersion" type="button">完整版本</button>
               <button class="toolbar-button" id="jumpNow" type="button">定位现在</button>
             </div>
           </div>
@@ -204,9 +208,19 @@
             <div class="scroll-hint" id="scrollHint" aria-hidden="true">
               <span>横向拖动</span><b>→</b>
             </div>
+            <button class="timeline-nav timeline-nav-prev" id="timelinePrev" type="button" aria-label="向左浏览日历"><b aria-hidden="true">‹</b><span>向前浏览</span></button>
+            <button class="timeline-nav timeline-nav-next" id="timelineNext" type="button" aria-label="向右浏览日历"><b aria-hidden="true">›</b><span>向后浏览</span></button>
           </div>
         </section>
 
+      </main>
+
+      <dialog class="calendar-info-dialog" id="calendarInfoDialog" aria-labelledby="calendarInfoTitle">
+        <div class="calendar-info-heading">
+          <h2 id="calendarInfoTitle">日程与说明</h2>
+          <button id="calendarInfoClose" type="button" aria-label="关闭日程与说明">×</button>
+        </div>
+        <a class="calendar-info-source" id="calendarInfoSource" href="https://www.bilibili.com/opus/1257920720462151697" target="_blank" rel="noopener noreferrer">查看日历来源 ↗</a>
         <section class="agenda-section" aria-labelledby="agendaTitle">
           <div class="section-heading compact">
             <div>
@@ -265,7 +279,7 @@
             </p>
           </div>
         </section>
-      </main>
+      </dialog>
 
       <footer class="site-footer">
         <div class="footer-main">

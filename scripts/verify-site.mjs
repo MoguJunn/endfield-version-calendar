@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const requiredFiles = [
   "index.html",
   "styles.css",
+  "workspace.css",
   "app.js",
   "calendar-config.js",
   "api-docs.html",
@@ -186,8 +187,8 @@ const assertions = [
   [css.includes("@keyframes versionFlagReveal") && css.includes("@keyframes eventBadgeReveal"), "版本旗帜或时间标签缺少动效"],
   [css.includes("@keyframes dateCellReveal") && css.includes("@keyframes densityFrameFeedback"), "日期轴或密度调节缺少动效"],
   [js.includes("timelineIntroPlayed") && js.includes("play-timeline-intro"), "时间轴入场动效缺少单次播放保护"],
-  [js.includes("eventTrackType") && js.includes("laneOffset"), "活动内部分类未参与轨道排布"],
-  [js.includes("updateArsenalViewportLayout") && js.includes("visibleLaneCount + 1"), "武库申领高度未按当前可见轨道动态计算"],
+  [js.includes("eventTrackType") && js.includes("preferredLanes"), "活动未复用空闲轨道或保留同类型轨道偏好"],
+  [js.includes("updateTimelineViewportLayout") && js.includes("availableHeight"), "日历高度未按当前可见轨道和视口动态计算"],
   [js.includes('overlayFor: "secret-realm"') && css.includes(".event-update-pin"), "密境行者内容更新未使用依附式更新标记"],
   [js.includes("visibleCategories.forEach") && !js.includes("timelineTrackMeta"), "时间轴未恢复原有大类展示"],
   [html.includes('aria-label="按活动大类筛选"'), "时间轴筛选说明未恢复为活动大类"],

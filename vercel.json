@@ -29,7 +29,7 @@
       ]
     },
     {
-      "source": "/(app.js|styles.css|calendar-config.js|api-docs.css|theme.js|theme.css)",
+      "source": "/(app.js|styles.css|workspace.css|calendar-config.js|api-docs.css|theme.js|theme.css)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" },
         { "key": "CDN-Cache-Control", "value": "no-store" }
