@@ -114,6 +114,10 @@ let currentDayWidth = Number.isFinite(initialCssDayWidth)
 elements.zoomRange.value = String(currentDayWidth);
 let lastAgendaSignature = "";
 let versionFitEnabled = true;
+let timelineGroups = [];
+let timelineBars = [];
+let timelinePins = [];
+const eventNodeState = new WeakMap();
 
 const beijingDateFormatter = new Intl.DateTimeFormat("zh-CN", {
   timeZone: "Asia/Shanghai",
@@ -142,17 +146,19 @@ const clockFormatter = new Intl.DateTimeFormat("zh-CN", {
   hour12: false,
 });
 
+const beijingPartsFormatter = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 function getBeijingParts(date) {
   return Object.fromEntries(
-    new Intl.DateTimeFormat("zh-CN", {
-      timeZone: "Asia/Shanghai",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).formatToParts(date).map((part) => [part.type, part.value]),
+    beijingPartsFormatter.formatToParts(date).map((part) => [part.type, part.value]),
   );
 }
 
@@ -268,9 +274,6 @@ function updateCountdownDisplay(milliseconds) {
   const nextText = formatCountdown(milliseconds);
   if (countdown.textContent === nextText) return;
   countdown.textContent = nextText;
-  countdown.classList.remove("countdown-tick");
-  void countdown.offsetWidth;
-  countdown.classList.add("countdown-tick");
   countdown.dataset.urgency = milliseconds <= 6 * 3_600_000
     ? "critical"
     : milliseconds <= DAY
@@ -321,6 +324,9 @@ function renderFilters() {
 
 function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
   lastViewportLayoutSignature = "";
+  timelineGroups = [];
+  timelineBars = [];
+  timelinePins = [];
   if (eventViewportFrame) {
     window.cancelAnimationFrame(eventViewportFrame);
     eventViewportFrame = 0;
@@ -401,6 +407,7 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
       button.classList.toggle("has-duration", Boolean(durationText));
       button.classList.toggle("has-remaining", Boolean(remainingText));
       button.innerHTML = `
+        ${event.image ? '<span class="event-image" aria-hidden="true"></span>' : ""}
         <span class="event-art" aria-hidden="true"><b>${event.symbol ?? "◇"}</b></span>
         <span class="event-copy">
           <strong><span class="event-date-badge${event.startUnknown ? " unknown" : ""}">${eventStartBadgeText(event)}</span><span class="event-name">${event.title}</span> ${relatedText}</strong>
@@ -410,6 +417,16 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
         ${durationText ? `<span class="event-duration">${durationText}</span>` : ""}
       `;
       button.title = `${event.title}｜${statusText(event, new Date())}`;
+      eventNodeState.set(button, {
+        event, status: statusOf(event, new Date()),
+        titlePrefix: `${event.title}｜${eventStartText(event)} — ${eventEndText(event)}｜`,
+        startOffset, duration,
+        image: button.querySelector(".event-image"),
+        copy: button.querySelector(".event-copy"),
+        timeCopy: button.querySelector(".event-copy small"),
+        remainingBadge: button.querySelector(".event-remaining"),
+        durationBadge: button.querySelector(".event-duration"),
+      });
       button.addEventListener("click", () => openEventDialog(event));
       tracks.appendChild(button);
 
@@ -434,6 +451,7 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
             </span>
           `;
           updatePin.title = `${overlay.title}｜${statusText(overlay, new Date())}`;
+          eventNodeState.set(updatePin, { event: overlay, status: statusOf(overlay, new Date()), titlePrefix: `${overlay.title}｜` });
           updatePin.addEventListener("click", () => openEventDialog(overlay));
           tracks.appendChild(updatePin);
         });
@@ -441,6 +459,11 @@ function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
 
     group.append(label, tracks);
     elements.timelineBody.appendChild(group);
+    const bars = [...tracks.querySelectorAll(".event-bar")];
+    const pins = [...tracks.querySelectorAll(".event-update-pin")];
+    timelineGroups.push({ group, tracks, bars, pins });
+    timelineBars.push(...bars);
+    timelinePins.push(...pins);
   });
   timelineIntroPlayed = true;
   scheduleVisibleEventContent();
@@ -517,7 +540,7 @@ function updatePhase(now) {
 function updateNowLine(now) {
   const rawOffset = (now - timelineStart) / DAY;
   const offset = Math.min(Math.max(rawOffset, 0), totalDays);
-  elements.timeline.style.setProperty("--now", offset);
+  setViewportStyle(elements.nowLine, "--now", String(offset));
   const beijingNow = new Date(now.getTime() + 8 * 3_600_000);
   const dateLabel = `${beijingNow.getUTCMonth() + 1}/${beijingNow.getUTCDate()}`;
   if (rawOffset < 0) {
@@ -531,13 +554,17 @@ function updateNowLine(now) {
 
 function updateEventBars(now) {
   let timeLabelsChanged = false;
-  document.querySelectorAll(".event-bar").forEach((bar) => {
-    const event = events.find((item) => item.id === bar.dataset.eventId);
-    if (!event) return;
-    bar.classList.remove("live", "upcoming", "ended");
-    bar.classList.add(statusOf(event, now));
-    bar.title = `${event.title}｜${eventStartText(event)} — ${eventEndText(event)}｜${statusText(event, now)}`;
-    const remaining = bar.querySelector(".event-remaining");
+  timelineBars.forEach((bar) => {
+    const state = eventNodeState.get(bar);
+    const { event } = state;
+    const status = statusOf(event, now);
+    if (state.status !== status) {
+      bar.classList.replace(state.status, status);
+      state.status = status;
+    }
+    const title = `${state.titlePrefix}${statusText(event, now)}`;
+    if (bar.title !== title) bar.title = title;
+    const remaining = state.remainingBadge;
     if (remaining) {
       const text = eventRemainingText(event, now);
       if (remaining.textContent !== text) {
@@ -548,12 +575,16 @@ function updateEventBars(now) {
       bar.classList.toggle("has-remaining", Boolean(text));
     }
   });
-  document.querySelectorAll(".event-update-pin").forEach((pin) => {
-    const event = events.find((item) => item.id === pin.dataset.eventId);
-    if (!event) return;
-    pin.classList.remove("live", "upcoming", "ended");
-    pin.classList.add(statusOf(event, now));
-    pin.title = `${event.title}｜${statusText(event, now)}`;
+  timelinePins.forEach((pin) => {
+    const state = eventNodeState.get(pin);
+    const { event } = state;
+    const status = statusOf(event, now);
+    if (state.status !== status) {
+      pin.classList.replace(state.status, status);
+      state.status = status;
+    }
+    const title = `${state.titlePrefix}${statusText(event, now)}`;
+    if (pin.title !== title) pin.title = title;
   });
   if (timeLabelsChanged) scheduleVisibleEventContent();
 }
@@ -626,29 +657,26 @@ function updateTimelineViewportLayout(labelWidth) {
   const visibleEnd = versionFitEnabled && currentVersion.endsAt
     ? Date.parse(currentVersion.endsAt)
     : visibleStart + visibleTrackWidth / currentDayWidth * DAY;
-  const byId = new Map(events.map((event) => [event.id, event]));
-  const plans = [...elements.timelineBody.querySelectorAll(".category-group")].map((group) => {
-    const bars = [...group.querySelectorAll(".event-bar")];
+  const plans = timelineGroups.map(({ group, tracks, bars, pins }) => {
     const visibleBars = bars.filter((bar) => {
-      const event = byId.get(bar.dataset.eventId);
+      const { event } = eventNodeState.get(bar);
       const end = event.displayEndDate?.getTime() ?? event.endDate?.getTime() ?? timelineEnd.getTime();
       const visible = event.startDate.getTime() < visibleEnd - 1 && end > visibleStart + 1;
       return visible;
-    }).sort((left, right) => byId.get(left.dataset.eventId).startDate - byId.get(right.dataset.eventId).startDate);
+    }).sort((left, right) => eventNodeState.get(left).event.startDate - eventNodeState.get(right).event.startDate);
     const ends = [];
     const lanes = new Map();
     visibleBars.forEach((bar) => {
-      const event = byId.get(bar.dataset.eventId);
+      const { event } = eventNodeState.get(bar);
       const available = ends.findIndex((end) => end <= event.startDate.getTime());
       const lane = available === -1 ? ends.length : available;
       ends[lane] = event.displayEndDate?.getTime() ?? event.endDate?.getTime() ?? timelineEnd.getTime();
       lanes.set(event.id, lane);
     });
-    const pins = [...group.querySelectorAll(".event-update-pin")];
     const updateLanes = new Set();
     const visiblePins = new Set();
     pins.forEach((pin) => {
-      const overlay = byId.get(pin.dataset.eventId);
+      const overlay = eventNodeState.get(pin).event;
       const lane = lanes.get(overlay.overlayFor);
       const visible = lane !== undefined && overlay.startDate.getTime() >= visibleStart && overlay.startDate.getTime() < visibleEnd;
       if (visible) {
@@ -656,7 +684,7 @@ function updateTimelineViewportLayout(labelWidth) {
         updateLanes.add(lane);
       }
     });
-    return { group, bars, pins, lanes, visiblePins, updateLanes, laneCount: Math.max(ends.length, 1) };
+    return { group, tracks, bars, pins, lanes, visiblePins, updateLanes, laneCount: Math.max(ends.length, 1) };
   });
   // 活动集合和视口未变化时，横向移动无需重排轨道或改写行高。
   const signature = JSON.stringify([
@@ -680,7 +708,7 @@ function updateTimelineViewportLayout(labelWidth) {
   setViewportStyle(elements.timeline, "--row-height", `${rowHeight}px`);
   elements.timeline.classList.toggle("compact-rows", rowHeight - regularGap < twoLineHeight);
   elements.timeline.classList.toggle("dense-dates", currentDayWidth < 18);
-  plans.forEach(({ group, bars, pins, lanes, visiblePins, updateLanes, laneCount }) => {
+  plans.forEach(({ group, tracks, bars, pins, lanes, visiblePins, updateLanes, laneCount }) => {
     const extra = (lane) => [...updateLanes].filter((updateLane) => updateLane < lane).length * updateHeight;
     bars.forEach((bar) => {
       setViewportStyle(bar, "visibility", lanes.has(bar.dataset.eventId) ? "visible" : "hidden");
@@ -690,13 +718,13 @@ function updateTimelineViewportLayout(labelWidth) {
     });
     pins.forEach((pin) => {
       setViewportStyle(pin, "visibility", visiblePins.has(pin) ? "visible" : "hidden");
-      const lane = lanes.get(byId.get(pin.dataset.eventId).overlayFor) ?? 0;
+      const lane = lanes.get(eventNodeState.get(pin).event.overlayFor) ?? 0;
       setViewportStyle(pin, "--lane", String(lane));
       setViewportStyle(pin, "--lane-extra", `${extra(lane)}px`);
     });
     const height = 8 + laneCount * rowHeight + updateLanes.size * updateHeight;
     setViewportStyle(group, "min-height", `${height}px`);
-    setViewportStyle(group.querySelector(".category-tracks"), "min-height", `${height}px`);
+    setViewportStyle(tracks, "min-height", `${height}px`);
   });
 }
 
@@ -730,10 +758,10 @@ function updateVisibleEventContent() {
   const compactRows = elements.timeline.classList.contains("compact-rows");
 
   const barUpdates = [];
-  document.querySelectorAll(".event-bar").forEach((bar) => {
+  timelineBars.forEach((bar) => {
     if (bar.style.visibility === "hidden") return;
-    const start = Number.parseFloat(bar.style.getPropertyValue("--start")) || 0;
-    const duration = Number.parseFloat(bar.style.getPropertyValue("--duration")) || 0;
+    const state = eventNodeState.get(bar);
+    const { startOffset: start, duration } = state;
     const barStart = labelWidth + start * currentDayWidth;
     const barWidth = Math.max(duration * currentDayWidth, 20);
     const barEnd = barStart + barWidth;
@@ -759,8 +787,8 @@ function updateVisibleEventContent() {
       Math.max(barWidth - visualWidth, 0),
     );
     const copyWidth = Math.max(visibleWidth, 20);
-    const remainingBadge = bar.querySelector(".event-remaining:not([hidden])");
-    const durationBadge = compactRows && remainingBadge ? remainingBadge : bar.querySelector(".event-duration");
+    const remainingBadge = state.remainingBadge && !state.remainingBadge.hidden ? state.remainingBadge : null;
+    const durationBadge = compactRows && remainingBadge ? remainingBadge : state.durationBadge;
     const durationSpace = durationBadge
       ? Math.min(durationBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 14
       : 10;
@@ -768,19 +796,33 @@ function updateVisibleEventContent() {
       ? Math.min(remainingBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 10
       : 0;
 
-    barUpdates.push({ bar, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth, durationSpace, remainingSpace });
+    barUpdates.push({ bar, state, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth, durationSpace, remainingSpace });
   });
   document.querySelector("#timelinePrev").disabled = atStart;
   document.querySelector("#timelineNext").disabled = atEnd;
   flagUpdates.forEach(({ flag, left }) => setViewportStyle(flag, "left", `${left}px`));
-  barUpdates.forEach(({ bar, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth, durationSpace, remainingSpace }) => {
-    setViewportStyle(bar, "--visible-inset", `${hiddenLeft}px`);
-    setViewportStyle(bar, "--visible-right-inset", `${rightInset}px`);
-    setViewportStyle(bar, "--visible-copy-width", `${copyWidth}px`);
-    setViewportStyle(bar, "--visual-inset", `${visualInset}px`);
-    setViewportStyle(bar, "--visual-width", `${visualWidth}px`);
-    setViewportStyle(bar, "--duration-space", `${durationSpace}px`);
-    setViewportStyle(bar, "--remaining-space", `${remainingSpace}px`);
+  barUpdates.forEach(({ bar, state, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth, durationSpace, remainingSpace }) => {
+    // 滚动位置只写到实际使用的子元素，避免变量变化使整条活动及图片重新计算样式。
+    setViewportStyle(state.copy, "transform", `translateX(${hiddenLeft}px)`);
+    setViewportStyle(state.copy, "width", `${copyWidth}px`);
+    setViewportStyle(state.copy, "padding-right", `${durationSpace}px`);
+    setViewportStyle(state.timeCopy, "padding-left", `${remainingSpace}px`);
+    [state.durationBadge, state.remainingBadge].forEach((badge) => {
+      if (!badge) return;
+      setViewportStyle(badge, "max-width", `${Math.max(20, copyWidth * 0.35)}px`);
+      setViewportStyle(badge, "right", `${rightInset + 6}px`);
+    });
+    if (state.remainingBadge) {
+      setViewportStyle(state.remainingBadge, "left", compactRows ? "auto" : `${hiddenLeft + 6}px`);
+      if (!compactRows) setViewportStyle(state.remainingBadge, "right", "auto");
+    }
+    if (state.image) {
+      setViewportStyle(state.image, "left", `${visualInset}px`);
+      setViewportStyle(state.image, "width", `${visualWidth}px`);
+    } else {
+      setViewportStyle(bar, "--visual-inset", `${visualInset}px`);
+      setViewportStyle(bar, "--visual-width", `${visualWidth}px`);
+    }
   });
 }
 
