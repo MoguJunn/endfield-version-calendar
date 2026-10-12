@@ -320,6 +320,7 @@ function renderFilters() {
 }
 
 function renderTimeline({ animate = !timelineIntroPlayed } = {}) {
+  lastViewportLayoutSignature = "";
   if (eventViewportFrame) {
     window.cancelAnimationFrame(eventViewportFrame);
     eventViewportFrame = 0;
@@ -612,8 +613,7 @@ function getTimelineLabelWidth() {
   ) || 0;
 }
 
-function updateTimelineViewportLayout() {
-  const labelWidth = getTimelineLabelWidth();
+function updateTimelineViewportLayout(labelWidth) {
   const visibleStart = versionFitEnabled
     ? Date.parse(currentVersion.startsAt)
     : timelineStart.getTime() + Math.max(elements.timelineScroll.scrollLeft / currentDayWidth, 0) * DAY;
@@ -628,7 +628,6 @@ function updateTimelineViewportLayout() {
       const event = byId.get(bar.dataset.eventId);
       const end = event.displayEndDate?.getTime() ?? event.endDate?.getTime() ?? timelineEnd.getTime();
       const visible = event.startDate.getTime() < visibleEnd - 1 && end > visibleStart + 1;
-      bar.style.visibility = visible ? "visible" : "hidden";
       return visible;
     }).sort((left, right) => byId.get(left.dataset.eventId).startDate - byId.get(right.dataset.eventId).startDate);
     const ends = [];
@@ -642,70 +641,91 @@ function updateTimelineViewportLayout() {
     });
     const pins = [...group.querySelectorAll(".event-update-pin")];
     const updateLanes = new Set();
+    const visiblePins = new Set();
     pins.forEach((pin) => {
       const overlay = byId.get(pin.dataset.eventId);
       const lane = lanes.get(overlay.overlayFor);
       const visible = lane !== undefined && overlay.startDate.getTime() >= visibleStart && overlay.startDate.getTime() < visibleEnd;
-      pin.style.visibility = visible ? "visible" : "hidden";
-      if (visible) updateLanes.add(lane);
+      if (visible) {
+        visiblePins.add(pin);
+        updateLanes.add(lane);
+      }
     });
-    return { group, bars, pins, lanes, updateLanes, laneCount: Math.max(ends.length, 1) };
+    return { group, bars, pins, lanes, visiblePins, updateLanes, laneCount: Math.max(ends.length, 1) };
   });
+  // 活动集合和视口未变化时，横向移动无需重排轨道或改写行高。
+  const signature = JSON.stringify([
+    elements.timelineScroll.clientWidth, elements.timelineScroll.clientHeight, window.innerWidth,
+    labelWidth, currentDayWidth,
+    plans.map(({ lanes, visiblePins }) => [[...lanes.keys()], [...visiblePins].map((pin) => pin.dataset.eventId)]),
+  ]);
+  if (signature === lastViewportLayoutSignature) return;
+  lastViewportLayoutSignature = signature;
   const laneCount = plans.reduce((sum, plan) => sum + plan.laneCount, 0);
   const updates = plans.reduce((sum, plan) => sum + plan.updateLanes.size, 0);
-  const updateHeight = Number.parseFloat(getComputedStyle(elements.timeline).getPropertyValue("--update-height"));
+  const typography = getComputedStyle(elements.timeline);
+  const updateHeight = Number.parseFloat(typography.getPropertyValue("--update-height"));
   const axisHeight = elements.dateAxis.offsetHeight + elements.versionAxis.offsetHeight;
   const availableHeight = elements.timelineScroll.clientHeight - axisHeight - 10 - plans.length * 8 - updates * updateHeight;
   const rowHeight = Math.max(20, Math.min(160, Math.floor(availableHeight / Math.max(laneCount, 1) * 10) / 10));
-  elements.timeline.style.setProperty("--row-height", `${rowHeight}px`);
-  const typography = getComputedStyle(elements.timeline);
   const titleSize = Number.parseFloat(typography.getPropertyValue("--event-title-size"));
   const timeSize = Number.parseFloat(typography.getPropertyValue("--event-time-size"));
   const twoLineHeight = titleSize * 1.35 + timeSize * 1.3 + 3 + 6;
   const regularGap = window.innerWidth >= 2800 ? 14 : window.innerWidth >= 1600 ? 10 : 6;
+  setViewportStyle(elements.timeline, "--row-height", `${rowHeight}px`);
   elements.timeline.classList.toggle("compact-rows", rowHeight - regularGap < twoLineHeight);
   elements.timeline.classList.toggle("dense-dates", currentDayWidth < 18);
-  plans.forEach(({ group, bars, pins, lanes, updateLanes, laneCount }) => {
+  plans.forEach(({ group, bars, pins, lanes, visiblePins, updateLanes, laneCount }) => {
     const extra = (lane) => [...updateLanes].filter((updateLane) => updateLane < lane).length * updateHeight;
     bars.forEach((bar) => {
+      setViewportStyle(bar, "visibility", lanes.has(bar.dataset.eventId) ? "visible" : "hidden");
       const lane = lanes.get(bar.dataset.eventId) ?? 0;
-      bar.style.setProperty("--lane", lane);
-      bar.style.setProperty("--lane-extra", `${extra(lane)}px`);
+      setViewportStyle(bar, "--lane", String(lane));
+      setViewportStyle(bar, "--lane-extra", `${extra(lane)}px`);
     });
     pins.forEach((pin) => {
+      setViewportStyle(pin, "visibility", visiblePins.has(pin) ? "visible" : "hidden");
       const lane = lanes.get(byId.get(pin.dataset.eventId).overlayFor) ?? 0;
-      pin.style.setProperty("--lane", lane);
-      pin.style.setProperty("--lane-extra", `${extra(lane)}px`);
+      setViewportStyle(pin, "--lane", String(lane));
+      setViewportStyle(pin, "--lane-extra", `${extra(lane)}px`);
     });
     const height = 8 + laneCount * rowHeight + updateLanes.size * updateHeight;
-    group.style.minHeight = `${height}px`;
-    group.querySelector(".category-tracks").style.minHeight = `${height}px`;
+    setViewportStyle(group, "min-height", `${height}px`);
+    setViewportStyle(group.querySelector(".category-tracks"), "min-height", `${height}px`);
   });
 }
 
+function setViewportStyle(element, property, value) {
+  if (element.style.getPropertyValue(property) !== value) element.style.setProperty(property, value);
+}
+
+let lastViewportLayoutSignature = "";
 let eventViewportFrame = 0;
 let densityFeedbackTimer = 0;
 
 function updateVisibleEventContent() {
   eventViewportFrame = 0;
+  const labelWidth = getTimelineLabelWidth();
   if (!versionFitEnabled) {
     const centerTime = timelineStart.getTime() + (elements.timelineScroll.scrollLeft
-      + (elements.timelineScroll.clientWidth - getTimelineLabelWidth()) / 2) / currentDayWidth * DAY;
+      + (elements.timelineScroll.clientWidth - labelWidth) / 2) / currentDayWidth * DAY;
     const viewedVersion = [...versions].reverse().find((version) => Date.parse(version.startsAt) <= centerTime);
     if (viewedVersion && viewedVersion.versionKey !== currentVersion.versionKey) {
       selectVersion(viewedVersion.versionKey, { fit: false });
     }
   }
-  updateTimelineViewportLayout();
-  updatePinnedVersionFlags();
-  document.querySelector("#timelinePrev").disabled = elements.timelineScroll.scrollLeft <= 1;
-  document.querySelector("#timelineNext").disabled = elements.timelineScroll.scrollLeft
+  updateTimelineViewportLayout(labelWidth);
+  // 先集中读取尺寸，再统一写入样式，避免每个活动都触发一次同步布局。
+  const flagUpdates = measurePinnedVersionFlags();
+  const atStart = elements.timelineScroll.scrollLeft <= 1;
+  const atEnd = elements.timelineScroll.scrollLeft
     >= elements.timelineScroll.scrollWidth - elements.timelineScroll.clientWidth - 1;
-  const labelWidth = getTimelineLabelWidth();
   const viewStart = elements.timelineScroll.scrollLeft + labelWidth;
   const viewEnd = elements.timelineScroll.scrollLeft + elements.timelineScroll.clientWidth;
 
+  const barUpdates = [];
   document.querySelectorAll(".event-bar").forEach((bar) => {
+    if (bar.style.visibility === "hidden") return;
     const start = Number.parseFloat(bar.style.getPropertyValue("--start")) || 0;
     const duration = Number.parseFloat(bar.style.getPropertyValue("--duration")) || 0;
     const barStart = labelWidth + start * currentDayWidth;
@@ -734,16 +754,23 @@ function updateVisibleEventContent() {
     );
     const copyWidth = Math.max(visibleWidth, 20);
 
-    bar.style.setProperty("--visible-inset", `${hiddenLeft}px`);
-    bar.style.setProperty("--visible-right-inset", `${Math.max(barEnd - visibleEnd, 0)}px`);
-    bar.style.setProperty("--visible-copy-width", `${copyWidth}px`);
-    bar.style.setProperty("--visual-inset", `${visualInset}px`);
-    bar.style.setProperty("--visual-width", `${visualWidth}px`);
+    barUpdates.push({ bar, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth });
+  });
+  document.querySelector("#timelinePrev").disabled = atStart;
+  document.querySelector("#timelineNext").disabled = atEnd;
+  flagUpdates.forEach(({ flag, left }) => setViewportStyle(flag, "left", `${left}px`));
+  barUpdates.forEach(({ bar, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth }) => {
+    setViewportStyle(bar, "--visible-inset", `${hiddenLeft}px`);
+    setViewportStyle(bar, "--visible-right-inset", `${rightInset}px`);
+    setViewportStyle(bar, "--visible-copy-width", `${copyWidth}px`);
+    setViewportStyle(bar, "--visual-inset", `${visualInset}px`);
+    setViewportStyle(bar, "--visual-width", `${visualWidth}px`);
   });
 }
 
-function updatePinnedVersionFlags() {
+function measurePinnedVersionFlags() {
   const scrollLeft = elements.timelineScroll.scrollLeft;
+  const updates = [];
   document.querySelectorAll(".version-flag").forEach((flag) => {
     const startOffset = Number.parseFloat(flag.dataset.startOffset);
     const endOffset = Number.parseFloat(flag.dataset.endOffset);
@@ -751,8 +778,13 @@ function updatePinnedVersionFlags() {
     const start = startOffset * currentDayWidth;
     const end = endOffset * currentDayWidth;
     const lastLeft = Math.max(start, end - flag.offsetWidth - 14);
-    flag.style.left = `${Math.min(Math.max(scrollLeft, start), lastLeft)}px`;
+    updates.push({ flag, left: Math.min(Math.max(scrollLeft, start), lastLeft) });
   });
+  return updates;
+}
+
+function updatePinnedVersionFlags() {
+  measurePinnedVersionFlags().forEach(({ flag, left }) => setViewportStyle(flag, "left", `${left}px`));
 }
 
 function scheduleVisibleEventContent() {
@@ -865,8 +897,6 @@ function setupDragScroll() {
       resizeFrame = 0;
       if (versionFitEnabled) fitSelectedVersion();
       scheduleVisibleEventContent();
-      updatePinnedVersionFlags();
-      updateTimelineViewportLayout();
     });
   };
   window.addEventListener("resize", refreshTimelineViewport, { passive: true });
