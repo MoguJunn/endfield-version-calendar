@@ -717,10 +717,8 @@ function updateVisibleEventContent() {
     const hiddenLeft = Math.max(visibleStart - barStart, 0);
     const visibleWidth = visibleEnd - visibleStart;
     const barHeight = bar.clientHeight;
-    const quietArt = barHeight < 28 || visibleWidth < 160;
-    bar.classList.toggle("quiet-art", quietArt);
-    // 角色头像用横幅局部构图，武器保留整体比例，避免整张立绘缩成小图标。
     const characterArt = bar.classList.contains("pool-art") && bar.dataset.backgroundType !== "weapon";
+    // 角色始终保留横幅局部构图，窄条允许只露眼睛，武器保持整体比例。
     const visualWidth = Math.min(visibleWidth * 0.38, characterArt
       ? Math.min(320, Math.max(160, barHeight * 4.8))
       : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
