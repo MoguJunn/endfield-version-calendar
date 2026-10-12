@@ -233,6 +233,8 @@ function eventRemainingText(event, now = new Date()) {
 function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
   element.classList.toggle("has-image", Boolean(event.image));
+  // 这两版官方长图的活动横幅均为约 835×152，详情沿用横幅比例。
+  element.classList.toggle("banner-art", /\/assets\/events\/(?:danqing|winter)-[^/]+\.webp$/u.test(event.image || ""));
   element.classList.toggle(
     "pool-art",
     Boolean(event.image) && (event.category === "operator" || event.category === "arsenal"),
@@ -718,10 +720,14 @@ function updateVisibleEventContent() {
     const visibleWidth = visibleEnd - visibleStart;
     const barHeight = bar.clientHeight;
     const characterArt = bar.classList.contains("pool-art") && bar.dataset.backgroundType !== "weapon";
+    const bannerArt = bar.classList.contains("banner-art");
     // 角色始终保留横幅局部构图，窄条允许只露眼睛，武器保持整体比例。
-    const visualWidth = Math.min(visibleWidth * 0.38, characterArt
-      ? Math.min(320, Math.max(160, barHeight * 4.8))
-      : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
+    // 活动横幅使用完整原图比例和全部行高，不受装饰图片宽度上限限制。
+    const visualWidth = bannerArt
+      ? Math.min(visibleWidth, barHeight * 835 / 151)
+      : Math.min(visibleWidth * 0.38, characterArt
+        ? Math.min(320, Math.max(160, barHeight * 4.8))
+        : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
     const visualInset = Math.min(
       Math.max(visibleEnd - barStart - visualWidth, hiddenLeft),
       Math.max(barWidth - visualWidth, 0),
