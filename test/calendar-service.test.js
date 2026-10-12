@@ -60,7 +60,7 @@ test("所有远端读取失败时返回本地版本", async () => {
   const calendar = await loadCalendar({ fetchImpl: async () => { throw new Error("offline"); } });
   assert.equal(calendar.source.mode, "fallback");
   assert.equal(calendar.source.partial, true);
-  assert.equal(calendar.versions.length, 6);
+  assert.equal(calendar.versions.length, 7);
   assert.ok(calendar.warnings.some((warning) => warning.includes("version_calendar")));
 });
 

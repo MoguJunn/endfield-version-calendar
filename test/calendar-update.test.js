@@ -12,7 +12,7 @@ test("数据库重构子类型和期次经过公开 API 与浏览器合并后仍
     { id: "joint_manual_extra_pool_character", name: "祖泉的新流", type: "extra", extra_subtype: "reconstruction", extra_series_phase: 2, start_time: "2026-10-29T04:00:00Z", end_time: "2026-11-19T04:00:00Z" },
     { id: "joint_manual_extra_pool_weapon", name: "细枝申领", type: "extra", extra_subtype: "reconstruction_claim", extra_series_phase: 2, start_time: "2026-10-29T04:00:00Z", end_time: "2026-11-19T04:00:00Z" },
   ], []);
-  const version = { versionKey: "version-7", startsAt: "2026-10-15T04:00:00Z", endsAt: "2026-11-26T04:00:00Z", pools, content: { events: [] } };
+  const version = { versionKey: "reconstruction-test", startsAt: "2026-10-15T04:00:00Z", endsAt: "2026-11-26T04:00:00Z", pools, content: { events: [] } };
   const events = buildEventsForVersion(version);
   assert.equal(events.find((event) => event.category === "operator").title, "「祖泉的新流」重构寻访 · 第2期");
   assert.equal(events.find((event) => event.category === "arsenal").title, "「细枝申领」重构申领 · 第2期");
@@ -140,12 +140,12 @@ test("数据库明确空开始时间不使用本地日期虚构时间轴位置",
   assert.equal(poolToEvent(pool).start, null);
 });
 
-test("没有数据库卡池时保留本地备份的相对规则和最新第六版时间", () => {
+test("没有数据库卡池时保留本地备份的最新日历时间", () => {
   const militaryEvent = buildEventsForVersion(fallbackVersion).find((event) => event.id === "weapon-years");
   const pupil = buildEventsForVersion(fallbackVersion).find((event) => event.id === "weapon-pupil");
   assert.equal(militaryEvent.end, "2026-09-24T11:59:00+08:00");
-  assert.equal(pupil.end, null);
-  assert.equal(pupil.endLabel, "「冬猎」后第1个特许寻访结束时");
+  assert.equal(pupil.end, "2026-11-05T11:59:00+08:00");
+  assert.equal(pupil.endLabel, null);
   const local = versionSixEvents.find((event) => event.id === "winter-hunt");
   const event = buildEventsForVersion({ ...versionSix, content: { events: [{ ...local, end: null }] } }).find((item) => item.id === local.id);
   assert.equal(event.end, local.end);
@@ -184,7 +184,7 @@ test("客户端恢复公开 API 后仍保留数据库时间和明确空结束时
 });
 
 test("第六版主要节点、两期补给与官方签到日期正确且图片存在", async () => {
-  assert.equal(fallbackVersions.at(-1).title, "雪凇幽梦");
+  assert.equal(fallbackVersions.find((version) => version.versionKey === "version-6").title, "雪凇幽梦");
   for (const event of versionSixEvents) {
     assert.ok(Number.isFinite(Date.parse(event.start)));
     if (event.end) assert.ok(Date.parse(event.end) > Date.parse(event.start));

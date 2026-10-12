@@ -16,9 +16,9 @@ import {
   statusOf,
 } from "../lib/calendar-core.js";
 
-test("本地回退包含六个版本及第五版历史活动", () => {
-  assert.equal(fallbackVersions.length, 6);
-  assert.equal(fallbackVersions.at(-1).versionKey, "version-6");
+test("本地回退包含七个版本及第五版历史活动", () => {
+  assert.equal(fallbackVersions.length, 7);
+  assert.equal(fallbackVersions.at(-1).versionKey, "version-7");
   assert.equal(rawEvents.length, 21);
   assert.ok(rawEvents.some((event) => event.id === "secret-realm-update"));
   assert.equal(fallbackVersion.sourceMeta.source, OFFICIAL_VERSION_CALENDAR_SOURCE);
@@ -32,7 +32,7 @@ test("官方视觉调整不改变公开活动分类标识", () => {
   );
 });
 
-test("活动规范化解析跟随时间并按内部类型排轨", () => {
+test("活动规范化解析跟随时间并避免并行活动遮挡", () => {
   const events = normalizeEvents([
     { id: "operator-a", category: "operator", start: "2026-01-01T00:00:00Z", end: "2026-01-03T00:00:00Z" },
     { id: "operator-b", category: "operator", start: "2026-01-02T00:00:00Z", end: "2026-01-04T00:00:00Z" },
@@ -40,6 +40,27 @@ test("活动规范化解析跟随时间并按内部类型排轨", () => {
   ]);
   assert.equal(events.find((event) => event.id === "follow").start, "2026-01-01T00:00:00Z");
   assert.deepEqual(events.filter((event) => event.category === "operator").map((event) => event.lane), [0, 1]);
+});
+
+test("跨版本不同活动类型复用空闲轨道，不随历史类型数量增高", () => {
+  const events = normalizeEvents([
+    { id: "old-gift", category: "limited", visual: "gift", start: "2026-01-01T00:00:00Z", end: "2026-01-03T00:00:00Z" },
+    { id: "old-festival", category: "limited", visual: "festival", start: "2026-01-01T00:00:00Z", end: "2026-01-04T00:00:00Z" },
+    { id: "new-photo", category: "limited", visual: "photo", start: "2026-02-01T00:00:00Z", end: "2026-02-03T00:00:00Z" },
+    { id: "new-contract", category: "limited", visual: "contract", start: "2026-02-01T00:00:00Z", end: "2026-02-04T00:00:00Z" },
+    { id: "next-film", category: "limited", visual: "film", start: "2026-02-04T00:00:00Z", end: "2026-02-05T00:00:00Z" },
+    { id: "permanent", category: "permanent", start: "2026-01-01T00:00:00Z", end: null, displayEnd: "2026-02-01T00:00:00Z" },
+    { id: "new-story", category: "permanent", visual: "story", start: "2026-02-01T00:00:00Z", end: null },
+  ]);
+  const limited = events.filter((event) => event.category === "limited");
+  assert.equal(Math.max(...limited.map((event) => event.lane)) + 1, 2);
+  for (const left of limited) for (const right of limited) {
+    if (left.id !== right.id && left.lane === right.lane) {
+      assert.ok(left.endDate <= right.startDate || right.endDate <= left.startDate);
+    }
+  }
+  assert.equal(events.find((event) => event.id === "permanent").lane,
+    events.find((event) => event.id === "new-story").lane);
 });
 
 test("卡池配色稳定且由卡池身份决定", () => {
