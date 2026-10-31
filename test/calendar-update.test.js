@@ -4,8 +4,52 @@ import { access, readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
 import { buildEventsForVersion, buildLegacyPoolCatalog, buildSeamlessEvents, fallbackVersion, fallbackVersions, poolToEvent, serializePublicEvent, serializePublicVersion, statusOf } from "../lib/calendar-core.js";
 import { versionSix, versionSixEvents } from "../lib/version-six.js";
+import { versionSeven } from "../lib/version-seven.js";
 
 const military = { poolId: "weponbox_1_4_1", name: "军列申领", type: "arsenal", startsAt: "2026-07-16T04:00:00Z", endsAt: "2026-09-30T04:00:00Z", backgroundUrl: "/avatars/weapons/test.png" };
+
+test("丹青渡官方日程修订覆盖旧备份，独立奖励期限与跨版本商店经过 API 恢复后保留", () => {
+  const maintenance = "2026-11-25T06:00:00+08:00";
+  const oldVersion = { ...versionSeven, content: { events: [
+    { id: "danqing-firework-bonds", end: "2026-11-26T06:00:00+08:00" },
+    { id: "sanity-supply-danqing", start: "2026-11-19T04:00:00+08:00", end: "2026-11-26T04:00:00+08:00" },
+  ] } };
+  const versions = [oldVersion, {
+    versionKey: "version-8", versionNumber: "8", startsAt: "2026-11-25T12:00:00+08:00",
+    endsAt: "2027-01-22T06:00:00+08:00", pools: [], content: { events: [] },
+  }];
+  const events = buildSeamlessEvents(versions);
+  const restored = buildSeamlessEvents(versions.map((version) => ({
+    ...serializePublicVersion(version), pools: [],
+    content: { resolvedPoolTimings: true, events: events.filter((event) => event.versionKey === version.versionKey).map(serializePublicEvent) },
+  })));
+  for (const result of [events, restored]) {
+    const byId = new Map(result.map((event) => [event.id, event]));
+    for (const id of ["danqing-fireworks", "danqing-firework-bonds", "war-echo-fervor", "danqing-crisis-contract", "danqing-next-version-warmup"]) {
+      assert.equal(byId.get(id).end, maintenance);
+      assert.equal(statusOf(byId.get(id), new Date(maintenance)), "ended");
+    }
+    const supply = byId.get("sanity-supply-danqing");
+    assert.equal(supply.start, "2026-11-18T04:00:00+08:00");
+    assert.equal(supply.end, "2026-11-25T04:00:00+08:00");
+    const shop = byId.get("danqing-crisis-shop");
+    assert.equal(result.filter((event) => event.id === shop.id).length, 1);
+    assert.equal(shop.end, "2026-12-02T04:00:00+08:00");
+    assert.equal(shop.displayEnd, null);
+    assert.equal(statusOf(shop, new Date("2026-11-26T12:00:00+08:00")), "live");
+    assert.equal(statusOf(shop, new Date(shop.end)), "ended");
+    const update = byId.get("danqing-hundred-boats-update");
+    assert.equal(update.start, "2026-11-11T04:00:00+08:00");
+    assert.equal(update.overlayFor, "danqing-hundred-boats");
+    assert.equal(update.milestone, true);
+    assert.equal(byId.get("monument-forest-whispers").title, "「影拓丰碑」新系列「深林呓语」");
+    assert.equal(byId.get("monument-demonic-forest").title, "「丰碑留名 · 魇林」");
+    for (const id of ["danqing-homecoming-story", "danqing-inn"]) {
+      assert.equal(byId.get(id).end, null);
+      assert.equal(statusOf(byId.get(id), new Date("2026-11-26T12:00:00+08:00")), "live");
+    }
+  }
+});
 
 test("数据库重构子类型和期次经过公开 API 与浏览器合并后仍正确展示", () => {
   const pools = buildLegacyPoolCatalog([

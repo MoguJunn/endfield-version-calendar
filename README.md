@@ -2,7 +2,7 @@
 
 <div align="center">
 
-## 「雪凇幽梦」版本实时日历
+## 「丹青渡」版本实时日历
 
 一个面向《明日方舟：终末地》玩家的非官方版本活动时间轴，按北京时间实时展示活动状态、下一节点倒计时和完整日程。
 
@@ -26,6 +26,7 @@ Endfield Version Calendar 将静态活动日程转换为可以实时浏览的网
 - 展示下一日程节点、精确到秒的倒计时和当前时间线位置。
 - 支持活动分类筛选、时间轴缩放、拖动浏览和快速定位现在。
 - 提供活动详情弹窗、近期日程列表、默认跟随系统的亮暗主题和移动端布局。
+- 单屏展示完整日历，活动横幅、时间标签与图片随可见区域布局；支持旧浏览器视口高度计算。
 - Version 6「雪凇幽梦」采用冰蓝与淡紫配色；切换历史版本时恢复原配色，亮暗模式偏好保持不变。
 - 优先同步主站公开版本快照和规范卡池名称，失败时分级回退。
 - 提供版本化、免密且允许跨域调用的公开活动 API。
@@ -33,6 +34,10 @@ Endfield Version Calendar 将静态活动日程转换为可以实时浏览的网
 - 尊重 `prefers-reduced-motion`，为减少动态效果的系统设置提供降级体验。
 
 ## 日历来源与致谢
+
+Version 7「丹青渡」的活动日程已于 2026-10-31 按[官方版本更新说明](https://endfield.hypergryph.com/news/6094)复核，并结合主站 10 月 30 日的版本边界修订，将版本维护截止同步为 11 月 25 日 06:00。理智补给独立开放时间为 11 月 18 日 04:00 至 11 月 25 日 04:00；百趣演武于 11 月 11 日 04:00 更新，危机合约「机密圣所」兑换商店开放至 12 月 2 日 04:00。常驻内容、限期活动与跨版本兑换期限分别保留。
+
+第七版离线定义位于 `lib/version-seven.js`，目前共 27 个活动、卡池及更新条目。版本预热签到尚无已核实的开始时间，继续显示“待官方公布”。社区基础资料仍保留[罗德岛蜜饼工坊时间轴 Ver. 26.10.11b](https://www.bilibili.com/opus/1257920720462151697)的来源记录。第 5～7 版已有活动资料，第 1～4 版以历史卡池为主；未来版本的日期与卡池由主站读取，其他活动随已核实来源补充。
 
 Version 6「雪凇幽梦」依据官方版本日历与罗德岛蜜饼工坊的版本内容时间轴（Ver 26.08.29b）整理，活动定义位于 `lib/version-six.js`。后续按官方 B 站动态核对：「天地墨显」签到于 10 月 8 日 12:00 开启，10 月 15 日 06:00 版本更新维护前结束，已替换旧预热签到占位项；新版本于当日 12:00 开启，两个时间不能混用。
 
@@ -114,7 +119,7 @@ curl "https://ef-cal.mogujun.icu/api/v1/events?version=5&category=operator,arsen
 
 ## 维护日程
 
-Version 5 活动位于 `lib/calendar-core.js` 的 `rawEvents` 数组，Version 6 活动位于 `lib/version-six.js` 的 `versionSixEvents` 数组，页面与公开 API 共用这些定义。基础数据结构示例：
+Version 5 活动位于 `lib/calendar-core.js` 的 `rawEvents` 数组，Version 6 位于 `lib/version-six.js` 的 `versionSixEvents`，Version 7 位于 `lib/version-seven.js` 的 `versionSevenEvents`。页面与公开 API 共用这些定义。基础数据结构示例：
 
 ```js
 {
@@ -143,7 +148,7 @@ Version 5 活动位于 `lib/calendar-core.js` 的 `rawEvents` 数组，Version 6
 
 所有确定时间必须使用包含 `+08:00` 的 ISO 8601 字符串，避免部署环境时区造成偏移。
 
-最近四个提交、数据库空值规则、重构期次、维护与版本开启时间、缓存及 CI 集中在 [维护说明](./docs/MAINTENANCE.md)。修改日程前按 [贡献指南](./CONTRIBUTING.md#日程数据规则) 核对来源和相关回归测试；官方活动正文及海报保留在 [官方来源记录](./assets/events/OFFICIAL_SOURCES.md)。
+近期实现、日程核对、数据库空值规则、重构期次、维护与版本开启时间、缓存及 CI 集中在 [维护说明](./docs/MAINTENANCE.md)。修改日程前按 [贡献指南](./CONTRIBUTING.md#日程数据规则) 核对来源和相关回归测试；官方活动正文及海报保留在 [官方来源记录](./assets/events/OFFICIAL_SOURCES.md)。
 
 ## 添加活动图片
 
@@ -168,6 +173,7 @@ image: "./assets/events/op-wander.webp",
 ├─ docs/MAINTENANCE.md   # 近期提交、来源、缓存与 CI 维护规则
 ├─ lib/calendar-core.js  # 页面与 API 共用的日历数据核心
 ├─ lib/version-six.js    # Version 6 活动与离线备份
+├─ lib/version-seven.js  # Version 7 官方活动核对与离线备份
 ├─ scripts/              # 本地服务器、构建和结构检查
 ├─ app.js                # 浏览器数据读取、实时状态和交互
 ├─ calendar-config.js    # 可选的 ICP 与公安备案展示配置

@@ -9,8 +9,8 @@ test("丹青渡空远端快照补齐日程与来源，更新标记均有对应�
   const version = merged.find((item) => item.versionKey === versionSeven.versionKey);
   assert.equal(version.content.activitiesComplete, true);
   const events = buildEventsForVersion(version);
-  assert.equal(events.length, 25);
-  assert.equal(new Set(events.map((event) => event.id)).size, 25);
+  assert.equal(events.length, 27);
+  assert.equal(new Set(events.map((event) => event.id)).size, 27);
   for (const event of events) {
     assert.ok(Number.isFinite(event.startDate.getTime()));
     if (event.endDate) assert.ok(event.endDate > event.startDate);
@@ -22,10 +22,10 @@ test("丹青渡空远端快照补齐日程与来源，更新标记均有对应�
       if (parent.endDate) assert.ok(event.startDate < parent.endDate);
     }
   }
-  assert.equal(events.filter((event) => event.milestone).length, 3);
+  assert.equal(events.filter((event) => event.milestone).length, 4);
   const warmup = events.find((event) => event.id === "danqing-next-version-warmup");
   assert.equal(warmup.startUnknown, true);
-  assert.equal(statusOf(warmup, new Date("2026-11-25T12:00:00+08:00")), "upcoming");
+  assert.equal(statusOf(warmup, new Date("2026-11-24T12:00:00+08:00")), "upcoming");
   assert.equal(statusOf(warmup, new Date(versionSeven.endsAt)), "ended");
 });
 

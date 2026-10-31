@@ -24,7 +24,7 @@ import {
   stableStringHash,
   statusOf,
 } from "./lib/calendar-core.js";
-import { DANQING_CALENDAR_SOURCE } from "./lib/version-seven.js";
+import { DANQING_UPDATE_SOURCE } from "./lib/version-seven.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 const CALENDAR_EVENTS_API = "/api/v1/events";
@@ -1415,12 +1415,12 @@ function updateVersionMetadata() {
   elements.activityNotice.querySelector("strong").textContent = "历史活动整理中";
   const danqing = currentVersion.versionKey === "version-7";
   elements.sourceCredit.hidden = !danqing && currentVersion.versionKey !== fallbackVersion.versionKey;
-  elements.sourceCredit.href = danqing ? DANQING_CALENDAR_SOURCE : fallbackVersion.sourceMeta.source;
-  elements.sourceCredit.querySelector("span").textContent = danqing ? "社区时间轴 / CALENDAR SOURCE" : "官方日历 / OFFICIAL SOURCE";
+  elements.sourceCredit.href = danqing ? DANQING_UPDATE_SOURCE : fallbackVersion.sourceMeta.source;
+  elements.sourceCredit.querySelector("span").textContent = danqing ? "官方更新说明 / OFFICIAL SOURCE" : "官方日历 / OFFICIAL SOURCE";
   elements.sourceCredit.querySelector("strong").textContent = danqing
-    ? "罗德岛蜜饼工坊 ·「丹青渡」版本时间轴 Ver. 26.10.11b"
+    ? "明日方舟：终末地官方 ·「丹青渡」版本更新说明"
     : "明日方舟：终末地官方 ·「向渊行」版本日历";
-  elements.sourceCredit.querySelector("em").textContent = danqing ? "查看来源动态与原图 ↗" : "查看官方公告与原图 ↗";
+  elements.sourceCredit.querySelector("em").textContent = danqing ? "查看官方活动时间与说明 ↗" : "查看官方公告与原图 ↗";
   const infoSource = document.querySelector("#calendarInfoSource");
   infoSource.hidden = elements.sourceCredit.hidden;
   infoSource.href = elements.sourceCredit.href;
@@ -1663,7 +1663,7 @@ async function loadMainSiteData() {
 }
 
 function init() {
-  document.querySelector("#updatedAt").textContent = "2026-08-29 · 第六版日程核对";
+  document.querySelector("#updatedAt").textContent = "2026-10-31 · 丹青渡官方日程核对";
   const requested = new URLSearchParams(window.location.search).get("version");
   const initialVersion = versions.find((version) => version.versionKey === requested || version.versionNumber === requested) || latestFallbackVersion;
   renderSeamlessCalendar(initialVersion.versionKey, { scroll: false });
