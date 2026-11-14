@@ -50,7 +50,12 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
 .filters { gap: 4px; flex-wrap: nowrap; }
 .filter-button { min-height: 28px; padding: 0 11px; border-color: transparent; font-size: 10px; }
 .filter-button.active { border-color: var(--ink); }
-.view-actions { gap: 7px; }
+.view-actions { gap: 7px; flex-wrap: wrap; }
+.row-height-control { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.row-height-control input { width: 84px; accent-color: var(--accent-strong); cursor: pointer; }
+.row-height-control output { min-width: 34px; font-variant-numeric: tabular-nums; }
+.row-height-control button { padding: 4px 6px; border: 1px solid var(--line); color: var(--ink); background: var(--surface); cursor: pointer; font: inherit; }
+.row-height-control button[aria-pressed="true"] { border-color: var(--accent-strong); background: var(--accent); color: #17202b; }
 .pan-hint { color: var(--muted); font-size: clamp(9px, .55vw, 14px); margin-right: 5px; white-space: nowrap; }
 .zoom-control { gap: 7px; font-size: 9px; padding: 0; min-height: 28px; }
 .zoom-control input { width: 88px; }
@@ -151,6 +156,7 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
 .event-bar.has-duration .event-copy small, .event-bar.has-remaining .event-copy small { padding: 0; }
 .event-bar.has-remaining .event-copy small { padding-left: var(--remaining-space, 0px); }
 .timeline.compact-rows .event-bar.has-remaining .event-copy small { padding-left: 0; }
+.event-bar.labels-collapsed .event-duration, .event-bar.labels-collapsed .event-remaining { display: none; }
 .event-bar:hover { transform: none; }
 .event-update-pin { top: calc(3px + (var(--lane) + 1) * var(--row-height) + var(--lane-extra,0px)); height: var(--update-height); grid-template-columns: 18px max-content; min-width: 18px; transform: translateX(-9px); animation: none !important; filter: none; }
 .event-update-pin::after { left: 8px; top: calc(-1 * var(--row-gap) + 1px); height: var(--row-gap); background: var(--line-strong); box-shadow: none; }
@@ -282,6 +288,8 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
   .filters { width: 100%; justify-content: space-between; gap: 2px; }
   .filter-button { flex: 1; font-size: 9px; padding: 0 5px; min-height: 26px; }
   .view-actions { display: flex; width: 100%; justify-content: flex-end; gap: 6px; }
+  .row-height-control { flex: 1 0 100%; justify-content: flex-end; }
+  .row-height-control input { flex: 1; max-width: 150px; }
   .zoom-control { margin-right: auto; flex: 1; }
   .zoom-control input { max-width: 120px; width: 100%; min-width: 40px; }
   .toolbar-button { min-height: 26px; font-size: 9px; }

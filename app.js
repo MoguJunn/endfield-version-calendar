@@ -61,6 +61,10 @@ const elements = {
   dateAxis: document.querySelector("#dateAxis"),
   filters: document.querySelector("#filters"),
   zoomRange: document.querySelector("#zoomRange"),
+  rowHeightRange: document.querySelector("#rowHeightRange"),
+  rowHeightValue: document.querySelector("#rowHeightValue"),
+  autoRowHeight: document.querySelector("#autoRowHeight"),
+  verticalPanHint: document.querySelector("#verticalPanHint"),
   jumpNow: document.querySelector("#jumpNow"),
   nowLine: document.querySelector("#nowLine"),
   nowLineLabel: document.querySelector("#nowLineLabel"),
@@ -114,6 +118,11 @@ let currentDayWidth = Number.isFinite(initialCssDayWidth)
 elements.zoomRange.value = String(currentDayWidth);
 let lastAgendaSignature = "";
 let versionFitEnabled = true;
+let preferredBarHeight = null;
+try {
+  const storedHeight = Number(localStorage.getItem("calendar-bar-height"));
+  if (Number.isFinite(storedHeight) && storedHeight >= 20 && storedHeight <= 120) preferredBarHeight = storedHeight;
+} catch { /* 浏览器禁用本地存储时仍可在本页调节。 */ }
 let timelineGroups = [];
 let timelineBars = [];
 let timelinePins = [];
@@ -239,8 +248,8 @@ function eventRemainingText(event, now = new Date()) {
 function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
   element.classList.toggle("has-image", Boolean(event.image));
-  // 这两版官方长图的活动横幅均为约 835×152，详情沿用横幅比例。
-  element.classList.toggle("banner-art", /\/assets\/events\/(?:danqing|winter)-[^/]+\.webp$/u.test(event.image || ""));
+  // 官方活动与卡池横幅完整展示，详情沿用横幅比例。
+  element.classList.toggle("banner-art", /\/assets\/events\/(?:danqing|winter|pool)-[^/]+\.webp$/u.test(event.image || ""));
   element.classList.toggle(
     "pool-art",
     Boolean(event.image) && (event.category === "operator" || event.category === "arsenal"),
@@ -690,6 +699,7 @@ function updateTimelineViewportLayout(labelWidth) {
   const signature = JSON.stringify([
     elements.timelineScroll.clientWidth, elements.timelineScroll.clientHeight, window.innerWidth,
     labelWidth, currentDayWidth,
+    preferredBarHeight,
     plans.map(({ lanes, visiblePins }) => [[...lanes.keys()], [...visiblePins].map((pin) => pin.dataset.eventId)]),
   ]);
   if (signature === lastViewportLayoutSignature) return;
@@ -700,13 +710,19 @@ function updateTimelineViewportLayout(labelWidth) {
   const updateHeight = Number.parseFloat(typography.getPropertyValue("--update-height"));
   const axisHeight = elements.dateAxis.offsetHeight + elements.versionAxis.offsetHeight;
   const availableHeight = elements.timelineScroll.clientHeight - axisHeight - 10 - plans.length * 8 - updates * updateHeight;
-  const rowHeight = Math.max(20, Math.min(160, Math.floor(availableHeight / Math.max(laneCount, 1) * 10) / 10));
+  const automaticRowHeight = Math.max(20, Math.min(160, Math.floor(availableHeight / Math.max(laneCount, 1) * 10) / 10));
   const titleSize = Number.parseFloat(typography.getPropertyValue("--event-title-size"));
   const timeSize = Number.parseFloat(typography.getPropertyValue("--event-time-size"));
   const twoLineHeight = titleSize * 1.35 + timeSize * 1.3 + 3 + 6;
   const regularGap = window.innerWidth >= 2800 ? 14 : window.innerWidth >= 1600 ? 10 : 6;
+  const compactRows = (preferredBarHeight ?? automaticRowHeight - regularGap) < twoLineHeight;
+  const rowHeight = preferredBarHeight === null ? automaticRowHeight : preferredBarHeight + (compactRows ? 4 : regularGap);
   setViewportStyle(elements.timeline, "--row-height", `${rowHeight}px`);
-  elements.timeline.classList.toggle("compact-rows", rowHeight - regularGap < twoLineHeight);
+  elements.timeline.classList.toggle("compact-rows", compactRows);
+  elements.rowHeightRange.value = String(preferredBarHeight ?? Math.max(20, Math.min(120, rowHeight - (compactRows ? 4 : regularGap))));
+  elements.rowHeightValue.textContent = preferredBarHeight === null ? "自动" : `${preferredBarHeight}px`;
+  elements.autoRowHeight.setAttribute("aria-pressed", String(preferredBarHeight === null));
+  elements.verticalPanHint.hidden = laneCount * rowHeight <= availableHeight;
   elements.timeline.classList.toggle("dense-dates", currentDayWidth < 18);
   plans.forEach(({ group, tracks, bars, pins, lanes, visiblePins, updateLanes, laneCount }) => {
     const extra = (lane) => [...updateLanes].filter((updateLane) => updateLane < lane).length * updateHeight;
@@ -778,7 +794,7 @@ function updateVisibleEventContent() {
     // 角色始终保留横幅局部构图，窄条允许只露眼睛，武器保持整体比例。
     // 活动横幅使用完整原图比例和全部行高，不受装饰图片宽度上限限制。
     const visualWidth = bannerArt
-      ? Math.min(visibleWidth, barHeight * 835 / 151)
+      ? Math.min(visibleWidth * 0.52, barHeight * 5.5)
       : Math.min(visibleWidth * 0.38, characterArt
         ? Math.min(320, Math.max(160, barHeight * 4.8))
         : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
@@ -786,31 +802,38 @@ function updateVisibleEventContent() {
       Math.max(visibleEnd - barStart - visualWidth, hiddenLeft),
       Math.max(barWidth - visualWidth, 0),
     );
-    const copyWidth = Math.max(visibleWidth, 20);
+    // 图片与文字各用独立区域，时长标签不再叠在横幅上。
+    const copyWidth = Math.max(0, visibleWidth - (state.image ? visualWidth + 6 : 0));
+    const labelLimit = Math.max(20, copyWidth * 0.35);
+    const labelsCollapsed = copyWidth < 100;
     const remainingBadge = state.remainingBadge && !state.remainingBadge.hidden ? state.remainingBadge : null;
     const durationBadge = compactRows && remainingBadge ? remainingBadge : state.durationBadge;
+    // 标签刚从窄条收起状态恢复时，尺寸仍可能为零，按最大标签宽度预留空间。
     const durationSpace = durationBadge
-      ? Math.min(durationBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 14
+      ? Math.min(durationBadge.scrollWidth || labelLimit, labelLimit) + 14
       : 10;
     const remainingSpace = !compactRows && remainingBadge
-      ? Math.min(remainingBadge.scrollWidth, Math.max(20, copyWidth * 0.35)) + 10
+      ? Math.min(remainingBadge.scrollWidth || labelLimit, labelLimit) + 10
       : 0;
 
-    barUpdates.push({ bar, state, hiddenLeft, rightInset: Math.max(barEnd - visibleEnd, 0), copyWidth, visualInset, visualWidth, durationSpace, remainingSpace });
+    barUpdates.push({ bar, state, hiddenLeft, badgeRight: Math.max(barEnd - visibleEnd, 0) + visibleWidth - copyWidth,
+      copyWidth, visualInset, visualWidth, durationSpace, remainingSpace, labelsCollapsed, labelLimit });
   });
   document.querySelector("#timelinePrev").disabled = atStart;
   document.querySelector("#timelineNext").disabled = atEnd;
   flagUpdates.forEach(({ flag, left }) => setViewportStyle(flag, "left", `${left}px`));
-  barUpdates.forEach(({ bar, state, hiddenLeft, rightInset, copyWidth, visualInset, visualWidth, durationSpace, remainingSpace }) => {
+  barUpdates.forEach(({ bar, state, hiddenLeft, badgeRight, copyWidth, visualInset, visualWidth, durationSpace, remainingSpace, labelsCollapsed, labelLimit }) => {
     // 滚动位置只写到实际使用的子元素，避免变量变化使整条活动及图片重新计算样式。
     setViewportStyle(state.copy, "transform", `translateX(${hiddenLeft}px)`);
     setViewportStyle(state.copy, "width", `${copyWidth}px`);
-    setViewportStyle(state.copy, "padding-right", `${durationSpace}px`);
-    setViewportStyle(state.timeCopy, "padding-left", `${remainingSpace}px`);
+    bar.classList.toggle("labels-collapsed", labelsCollapsed);
+    setViewportStyle(state.copy, "padding-left", `${labelsCollapsed ? Math.min(10, copyWidth / 2) : 10}px`);
+    setViewportStyle(state.copy, "padding-right", `${labelsCollapsed ? Math.min(6, copyWidth / 2) : durationSpace}px`);
+    setViewportStyle(state.timeCopy, "padding-left", `${labelsCollapsed ? 0 : remainingSpace}px`);
     [state.durationBadge, state.remainingBadge].forEach((badge) => {
       if (!badge) return;
-      setViewportStyle(badge, "max-width", `${Math.max(20, copyWidth * 0.35)}px`);
-      setViewportStyle(badge, "right", `${rightInset + 6}px`);
+      setViewportStyle(badge, "max-width", `${labelLimit}px`);
+      setViewportStyle(badge, "right", `${badgeRight + 6}px`);
     });
     if (state.remainingBadge) {
       setViewportStyle(state.remainingBadge, "left", compactRows ? "auto" : `${hiddenLeft + 6}px`);
@@ -1673,6 +1696,16 @@ function init() {
   elements.zoomRange.addEventListener("input", (event) => {
     setTimelineDensity(Number(event.target.value));
   });
+  const setBarHeight = (height) => {
+    preferredBarHeight = height;
+    try {
+      if (height === null) localStorage.removeItem("calendar-bar-height");
+      else localStorage.setItem("calendar-bar-height", String(height));
+    } catch { /* 不影响当前页面的调节。 */ }
+    scheduleVisibleEventContent();
+  };
+  elements.rowHeightRange.addEventListener("input", (event) => setBarHeight(Number(event.target.value)));
+  elements.autoRowHeight.addEventListener("click", () => setBarHeight(null));
   elements.jumpNow.addEventListener("click", () => jumpToNow());
   document.querySelector("#fitVersion").addEventListener("click", fitSelectedVersion);
   const browseTimeline = (direction) => {
@@ -1705,6 +1738,12 @@ function init() {
   }, { passive: true });
   elements.timelineScroll.addEventListener("wheel", (event) => {
     if (!event.ctrlKey) {
+      if (event.shiftKey && elements.timelineScroll.scrollHeight > elements.timelineScroll.clientHeight) {
+        event.preventDefault();
+        const unit = event.deltaMode === 1 ? 24 : event.deltaMode === 2 ? elements.timelineScroll.clientHeight : 1;
+        elements.timelineScroll.scrollTop += (event.deltaY || event.deltaX) * unit;
+        return;
+      }
       // 原生横向触控板保持原行为；普通鼠标滚轮转换为横向浏览。
       versionFitEnabled = false;
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;

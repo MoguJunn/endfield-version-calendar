@@ -1,6 +1,6 @@
 # 官方活动图片与时间核对记录
 
-记录更新至 2026-10-31。10 月 7 日的图片核对来源为 B 站「明日方舟终末地」（UID 1265652806），通过本地 `bilibili-mcp` 的用户信息工具核验身份，活动正文及图片从官方公开动态读取。当时 MCP 未提供动态读取工具，历史动态分页也未返回九月记录，未确认的活动图片不猜测匹配；账号身份核验不代表官方历史动态全量核验。第七版于 10 月 31 日增加官网更新说明复核，详见文末。
+已发布记录更新至 2026-10-31，文末另记本轮待发布的卡池横幅。10 月 7 日的图片核对来源为 B 站「明日方舟终末地」（UID 1265652806），通过本地 `bilibili-mcp` 的用户信息工具核验身份，活动正文及图片从官方公开动态读取。当时 MCP 未提供动态读取工具，历史动态分页也未返回九月记录，未确认的活动图片不猜测匹配；账号身份核验不代表官方历史动态全量核验。第七版于 10 月 31 日增加官网更新说明复核，详见下方记录。
 
 图片保留官方原图完整构图，转换为 1600×900 WebP，供本站时间轴与详情共用。使用本站素材路径，避免第三方图片防盗链影响展示。
 
@@ -91,3 +91,20 @@
 - 丰碑系列名称按正文改为「深林呓语」「丰碑留名 · 魇林」，沿用 `monument-forest-whispers`、`monument-demonic-forest` 两个事件 ID。
 - 「归野」活动页面在维护前下线，支线任务与对应奖励仍可继续体验和获取；缘缘庄客栈也在烟火生缘限时任务结束后继续开放。现有常驻事件保留，详情补充两种期限的区别。
 - 预热签到仍未取得已核实的名称与开始时间。保留未知时间标记和原示意位置，不把 11 月 23 日 04:00 当作已公布日期；截止随版本维护边界同步。
+
+## 卡池公告横幅（本轮待发布）
+
+以下 12 张配图取自官方卡池公告正文，原图均为 1650×300，完整转换为 WebP（质量 90），不裁切、不放大。原图地址与对应关系维护在 [`lib/pool-banners.js`](../../lib/pool-banners.js)，按卡池类别、标准／重构类型与规范名称匹配。重构公告图不用于同名的初次特许寻访；数据库明确维护其他期次时，保留该期既有图片。
+
+- `pool-rejuvenation.webp`：[万物更新特许寻访](https://endfield.hypergryph.com/news/8548)。
+- `pool-fireworks.webp`：[烟火邀星河特许寻访](https://endfield.hypergryph.com/news/7204)。
+- `pool-jade.webp`：[篆玉申领](https://endfield.hypergryph.com/news/7212)。
+- `pool-moon.webp`：[月映申领](https://endfield.hypergryph.com/news/5971)。
+- `pool-reconstruction-character.webp`、`pool-reconstruction-weapon.webp`：[祖泉的新流重构寻访与细枝申领重构申领](https://endfield.hypergryph.com/news/3893)，分别取两段说明下的横幅。
+- `pool-winter-hunt.webp`：[冬猎特许寻访](https://endfield.hypergryph.com/news/6097)。
+- `pool-deep-cold.webp`：[幽寒申领](https://endfield.hypergryph.com/news/5989)。
+- `pool-ivonne.webp`、`pool-art.webp`：[绚丽异彩重构寻访与点绘申领重构申领](https://endfield.hypergryph.com/news/2651)，分别取两段说明下的横幅。
+- `pool-dawn.webp`：[晨星于此闪耀特许寻访](https://endfield.hypergryph.com/news/1165)。
+- `pool-pupil.webp`：[明曜申领](https://endfield.hypergryph.com/news/7216)。
+
+卡池开始、结束时间、正式 ID、期次继续从主站数据库合并；官方横幅仅覆盖已核验卡池的展示图片，公开 API 与浏览器再次合并后保持一致。尚未核验到独立横幅的历史卡池保留既有配图，不以版本总览图替代卡池公告图。素材权利归属仍见 [第三方声明](../../THIRD_PARTY_NOTICES.md)。

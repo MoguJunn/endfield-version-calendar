@@ -117,7 +117,7 @@ test("重构池即使远端没有颜色也能展示且保留新类型与最新�
     assert.equal(event.end, pool.endsAt);
     assert.equal(event.endLabel, null);
     assert.match(event.color, /^#[0-9a-f]{6}$/iu);
-    assert.match(event.image, /reconstruction.png$/u);
+    assert.equal(event.image, category === "operator" ? "./assets/events/pool-ivonne.webp" : "./assets/events/pool-art.webp");
     assert.equal(poolToEvent(pool).poolKind, "reconstruction");
     assert.equal(result.filter((item) => item.poolId === local.poolId).length, 1);
   }

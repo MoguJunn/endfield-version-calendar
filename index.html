@@ -169,7 +169,13 @@
           <div class="calendar-toolbar">
             <div class="filters" id="filters" aria-label="按活动大类筛选"></div>
             <div class="view-actions">
-              <span class="pan-hint">滚轮左右浏览</span>
+              <div class="row-height-control">
+                <label for="rowHeightRange">活动条高度</label>
+                <input id="rowHeightRange" type="range" min="20" max="120" step="2" value="36" aria-label="活动条高度" />
+                <output id="rowHeightValue" for="rowHeightRange">自动</output>
+                <button id="autoRowHeight" type="button" aria-pressed="true">自动</button>
+              </div>
+              <span class="pan-hint">滚轮左右浏览<span id="verticalPanHint" hidden> · Shift + 滚轮上下</span></span>
               <label class="zoom-control">
                 <span class="zoom-label">时间轴密度</span>
                 <span class="zoom-shortcut" id="zoomShortcut">

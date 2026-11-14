@@ -41,7 +41,7 @@ test("第七版数据库卡池时间仍为权威，公开 API 再合并不重复
   for (const pool of pools) {
     const event = events.find((item) => item.poolId === pool.poolId);
     assert.equal(event.end, pool.endsAt);
-    assert.match(event.image, /test.png$/u);
+    assert.match(event.image, /\/assets\/events\/pool-[^/]+\.webp$/u);
   }
   const restored = buildEventsForVersion({
     ...serializePublicVersion(version), pools: [],
@@ -49,6 +49,7 @@ test("第七版数据库卡池时间仍为权威，公开 API 再合并不重复
   });
   assert.equal(restored.length, events.length);
   assert.equal(restored.find((event) => event.poolId === pools[0].poolId).end, pools[0].endsAt);
+  assert.equal(restored.find((event) => event.poolId === pools[0].poolId).image, events.find((event) => event.poolId === pools[0].poolId).image);
 });
 
 test("第六版奖励跨入丹青渡，常驻内容在第七版边界收束且仍开放", () => {
