@@ -25,6 +25,7 @@ import {
   statusOf,
 } from "./lib/calendar-core.js";
 import { DANQING_UPDATE_SOURCE } from "./lib/version-seven.js";
+import { VERSION_EIGHT_BRIEFING, VERSION_EIGHT_DRAFT_NOTICE, versionEight } from "./lib/version-eight.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 const CALENDAR_EVENTS_API = "/api/v1/events";
@@ -249,7 +250,9 @@ function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
   element.classList.toggle("has-image", Boolean(event.image));
   // 官方活动与卡池横幅完整展示，详情沿用横幅比例。
-  element.classList.toggle("banner-art", /\/assets\/events\/(?:danqing|winter|pool)-[^/]+\.webp$/u.test(event.image || ""));
+  const artwork = event.image?.match(/\/assets\/events\/(danqing|winter|pool|mushroom)-[^/]+\.webp$/u)?.[1];
+  element.classList.toggle("banner-art", Boolean(artwork));
+  element.classList.toggle("briefing-art", artwork === "mushroom");
   element.classList.toggle(
     "pool-art",
     Boolean(event.image) && (event.category === "operator" || event.category === "arsenal"),
@@ -794,7 +797,7 @@ function updateVisibleEventContent() {
     // 角色始终保留横幅局部构图，窄条允许只露眼睛，武器保持整体比例。
     // 活动横幅使用完整原图比例和全部行高，不受装饰图片宽度上限限制。
     const visualWidth = bannerArt
-      ? Math.min(visibleWidth * 0.52, barHeight * 5.5)
+      ? Math.min(visibleWidth * 0.52, barHeight * (bar.classList.contains("briefing-art") ? 1280 / 598 : 5.5))
       : Math.min(visibleWidth * 0.38, characterArt
         ? Math.min(320, Math.max(160, barHeight * 4.8))
         : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
@@ -1416,10 +1419,12 @@ function renderVersionSwitcher() {
 function updateVersionMetadata() {
   const title = currentVersion.title || "未命名版本";
   const versionNumber = currentVersion.versionNumber || "?";
-  // Adopt the announced preview palette on the latest calendar without
-  // inventing a release date or changing its underlying version content.
-  document.documentElement.dataset.versionTheme = currentVersion.versionKey === versions[versions.length - 1]?.versionKey
-    || title.includes("丹青渡") ? "danqing" : currentVersion.versionKey === "version-6" ? "snow" : "default";
+  const mushroom = currentVersion.versionKey === versionEight.versionKey || String(versionNumber) === "8";
+  const danqing = currentVersion.versionKey === "version-7";
+  // 配色绑定具体版本，避免新版本继续沿用上一版的主题。
+  document.documentElement.dataset.versionTheme = mushroom
+    ? "mushroom" : danqing || title.includes("丹青渡")
+      ? "danqing" : currentVersion.versionKey === "version-6" ? "snow" : "default";
   document.dispatchEvent(new Event("versionthemechange"));
   const selectedStart = new Date(currentVersion.startsAt || timelineStart);
   const selectedEnd = new Date(currentVersion.endsAt || timelineEnd);
@@ -1429,26 +1434,31 @@ function updateVersionMetadata() {
 
   elements.versionNumber.textContent = `VERSION ${versionNumber}`;
   elements.versionTitle.textContent = `「${title}」`;
-  elements.versionStatusLabel.textContent = activitiesComplete ? "版本内容 · 实时日历" : "历史版本 · 活动待补充";
+  elements.versionStatusLabel.textContent = mushroom ? VERSION_EIGHT_DRAFT_NOTICE
+    : activitiesComplete ? "版本内容 · 实时日历" : "历史版本 · 活动待补充";
   elements.versionLiveLabel.textContent = `${startParts.year}.${startParts.month}.${startParts.day} — ${endParts.year}.${endParts.month}.${endParts.day}`;
   elements.versionEndDate.textContent = `${endParts.month}.${endParts.day}`;
   elements.versionEndTime.textContent = `${endParts.year} · ${endParts.hour}:${endParts.minute}`;
   elements.heroWatermark.textContent = String(currentVersion.versionKey || title).replace(/[^a-z0-9]+/giu, " ").trim().toUpperCase();
-  elements.activityNotice.hidden = activitiesComplete;
-  elements.activityNotice.querySelector("strong").textContent = "历史活动整理中";
-  const danqing = currentVersion.versionKey === "version-7";
-  elements.sourceCredit.hidden = !danqing && currentVersion.versionKey !== fallbackVersion.versionKey;
-  elements.sourceCredit.href = danqing ? DANQING_UPDATE_SOURCE : fallbackVersion.sourceMeta.source;
-  elements.sourceCredit.querySelector("span").textContent = danqing ? "官方更新说明 / OFFICIAL SOURCE" : "官方日历 / OFFICIAL SOURCE";
-  elements.sourceCredit.querySelector("strong").textContent = danqing
-    ? "明日方舟：终末地官方 ·「丹青渡」版本更新说明"
-    : "明日方舟：终末地官方 ·「向渊行」版本日历";
-  elements.sourceCredit.querySelector("em").textContent = danqing ? "查看官方活动时间与说明 ↗" : "查看官方公告与原图 ↗";
+  elements.activityNotice.hidden = activitiesComplete && !mushroom;
+  elements.activityNotice.querySelector("strong").textContent = mushroom ? VERSION_EIGHT_DRAFT_NOTICE : "历史活动整理中";
+  elements.activityNotice.querySelector("span").textContent = mushroom
+    ? "根据官方导览收录，涉及开服或维护的时间暂按现有版本边界展示。"
+    : "寻访与武库日程已从主站数据库载入，其他历史活动仍在逐步补充。";
+  elements.sourceCredit.hidden = !mushroom && !danqing && currentVersion.versionKey !== fallbackVersion.versionKey;
+  elements.sourceCredit.href = mushroom ? VERSION_EIGHT_BRIEFING : danqing ? DANQING_UPDATE_SOURCE : fallbackVersion.sourceMeta.source;
+  elements.sourceCredit.querySelector("span").textContent = mushroom ? "官方导览 / OFFICIAL SOURCE"
+    : danqing ? "官方更新说明 / OFFICIAL SOURCE" : "官方日历 / OFFICIAL SOURCE";
+  elements.sourceCredit.querySelector("strong").textContent = mushroom ? `明日方舟：终末地官方 ·「${title}」新版本导览`
+    : danqing ? "明日方舟：终末地官方 ·「丹青渡」版本更新说明" : "明日方舟：终末地官方 ·「向渊行」版本日历";
+  elements.sourceCredit.querySelector("em").textContent = mushroom ? "查看官方新活动导览 ↗"
+    : danqing ? "查看官方活动时间与说明 ↗" : "查看官方公告与原图 ↗";
   const infoSource = document.querySelector("#calendarInfoSource");
   infoSource.hidden = elements.sourceCredit.hidden;
   infoSource.href = elements.sourceCredit.href;
   infoSource.textContent = `${elements.sourceCredit.querySelector("strong").textContent} ↗`;
-  elements.calendarNote.textContent = activitiesComplete
+  elements.calendarNote.textContent = mushroom ? `${VERSION_EIGHT_DRAFT_NOTICE}。导览活动与卡池日程汇总于本页，具体安排以官方公告和游戏内实际时间为准。`
+    : activitiesComplete
     ? `页面依据「${title}」版本数据库与已核对活动资料整理；常驻活动条在下一版本分割线收束，仅表示展示范围，内容仍常驻开放。若时间不一致，请以官方公告和游戏内实际时间为准。`
     : `「${title}」历史版本的角色与武器卡池已从主站数据库载入，其他活动仍待补充；跨版本卡池会在无缝总轴中连续展示。`;
   document.title = `「${title}」Version ${versionNumber} 实时日历`;

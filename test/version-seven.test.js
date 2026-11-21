@@ -23,10 +23,35 @@ test("丹青渡空远端快照补齐日程与来源，更新标记均有对应�
     }
   }
   assert.equal(events.filter((event) => event.milestone).length, 4);
-  const warmup = events.find((event) => event.id === "danqing-next-version-warmup");
-  assert.equal(warmup.startUnknown, true);
-  assert.equal(statusOf(warmup, new Date("2026-11-24T12:00:00+08:00")), "upcoming");
-  assert.equal(statusOf(warmup, new Date(versionSeven.endsAt)), "ended");
+});
+
+test("蕈属集群替换旧签到占位，公开 API 再合并后保留确认的日程与奖励", () => {
+  const id = "danqing-next-version-warmup";
+  const oldEvent = {
+    id, title: "新版本预热签到活动", start: "2026-11-23T04:00:00+08:00",
+    startUnknown: true, startLabel: "待官方公布", image: null,
+  };
+  const version = { ...versionSeven, content: { events: [oldEvent] } };
+  const events = buildEventsForVersion(version);
+  const restored = buildEventsForVersion({
+    ...serializePublicVersion(version), pools: [],
+    content: { resolvedPoolTimings: true, events: events.map((event) => serializePublicEvent(event)) },
+  });
+  for (const result of [events, restored]) {
+    const matching = result.filter((event) => event.id === id);
+    assert.equal(matching.length, 1);
+    const [warmup] = matching;
+    assert.equal(warmup.title, "「蕈属集群」限时签到");
+    assert.equal(warmup.startUnknown, false);
+    assert.equal(warmup.startLabel, null);
+    assert.equal(warmup.start, "2026-11-21T19:40:00+08:00");
+    assert.equal(warmup.end, "2026-11-25T06:00:00+08:00");
+    assert.match(warmup.image, /\/assets\/events\/danqing-next-version-warmup\.webp$/u);
+    assert.match(warmup.description, /基础寻访凭证 ×2、嵌晶玉 ×500/u);
+    assert.equal(statusOf(warmup, new Date(Date.parse(warmup.start) - 1)), "upcoming");
+    assert.equal(statusOf(warmup, new Date(warmup.start)), "live");
+    assert.equal(statusOf(warmup, new Date(warmup.end)), "ended");
+  }
 });
 
 test("第七版数据库卡池时间仍为权威，公开 API 再合并不重复或恢复图片时间", () => {

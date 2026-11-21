@@ -60,8 +60,8 @@
     if (themeColor) {
       const palette = document.documentElement.dataset.versionTheme;
       themeColor.content = resolved === "dark"
-        ? (palette === "danqing" ? "#171610" : palette === "snow" ? "#0d1426" : "#101310")
-        : (palette === "danqing" ? "#f4efdf" : palette === "snow" ? "#edf3fc" : "#eef0ec");
+        ? (palette === "mushroom" ? "#1b1524" : palette === "danqing" ? "#171610" : palette === "snow" ? "#0d1426" : "#101310")
+        : (palette === "mushroom" ? "#fff8e9" : palette === "danqing" ? "#f4efdf" : palette === "snow" ? "#edf3fc" : "#eef0ec");
     }
     updateControls();
   }

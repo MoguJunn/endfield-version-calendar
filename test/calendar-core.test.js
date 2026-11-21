@@ -16,9 +16,9 @@ import {
   statusOf,
 } from "../lib/calendar-core.js";
 
-test("本地回退包含七个版本及第五版历史活动", () => {
-  assert.equal(fallbackVersions.length, 7);
-  assert.equal(fallbackVersions.at(-1).versionKey, "version-7");
+test("本地回退包含八个版本及第五版历史活动", () => {
+  assert.equal(fallbackVersions.length, 8);
+  assert.equal(fallbackVersions.at(-1).versionKey, "version-8");
   assert.equal(rawEvents.length, 21);
   assert.ok(rawEvents.some((event) => event.id === "secret-realm-update"));
   assert.equal(fallbackVersion.sourceMeta.source, OFFICIAL_VERSION_CALENDAR_SOURCE);

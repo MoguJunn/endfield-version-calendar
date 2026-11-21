@@ -110,6 +110,36 @@
   --shadow: 0 20px 60px rgba(12, 10, 5, 0.36);
 }
 
+/* VERSION 8：奶白底、橙黄主色、蘑菇紫与青蓝描边。
+   参考：https://i0.hdslb.com/bfs/new_dyn/411083e4dc1913d5b5217efcf16f91101265652806.png */
+:root[data-version-theme="mushroom"] {
+  --bg: #fff8e9;
+  --surface: #fffdf7;
+  --surface-strong: #ffffff;
+  --ink: #30213f;
+  --muted: #796477;
+  --line: rgba(131, 70, 174, 0.16);
+  --line-strong: rgba(47, 163, 181, 0.4);
+  --accent: #ffd247;
+  --accent-strong: #8441c6;
+  --accent-rgb: 255, 210, 71;
+  --hero-background: linear-gradient(115deg, #382242 0%, #6b3545 58%, #a05218 100%);
+  --category-background: #30213f;
+  --shadow: 0 18px 48px rgba(108, 59, 122, 0.12);
+}
+
+:root[data-version-theme="mushroom"][data-theme="dark"] {
+  --bg: #1b1524;
+  --surface: #241c30;
+  --surface-strong: #30243d;
+  --ink: #fff7e7;
+  --muted: #c5b6cf;
+  --line: rgba(192, 152, 229, 0.18);
+  --line-strong: rgba(90, 211, 224, 0.32);
+  --accent-strong: #c596ff;
+  --shadow: 0 20px 60px rgba(17, 9, 27, 0.36);
+}
+
 * {
   box-sizing: border-box;
   font-family: var(--font-sans) !important;
