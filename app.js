@@ -249,15 +249,22 @@ function eventRemainingText(event, now = new Date()) {
 function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
   element.classList.toggle("has-image", Boolean(event.image));
-  // 官方活动与卡池横幅完整展示，详情沿用横幅比例。
-  const artwork = event.image?.match(/\/assets\/events\/(danqing|winter|pool|mushroom)-[^/]+\.webp$/u)?.[1];
+  const artwork = event.image?.match(/\/assets\/events\/((?:danqing|winter|pool|mushroom)-[^/]+)\.webp$/u)?.[1];
+  const tallArtwork = artwork?.startsWith("mushroom-pool-") || artwork === "mushroom-old-dam";
   element.classList.toggle("banner-art", Boolean(artwork));
-  element.classList.toggle("tall-announcement-art", /\/mushroom-(?:pool-[^/]+|old-dam)\.webp$/u.test(event.image || ""));
+  element.classList.toggle("tall-announcement-art", tallArtwork);
+  element.style.setProperty("--banner-aspect", tallArtwork
+    ? `781 / ${artwork === "mushroom-old-dam" ? 440 : 438}`
+    : "5.5");
+  element.style.setProperty("--banner-position", tallArtwork
+    ? `${event.category === "operator" ? "28%" : "50%"} 40%`
+    : "center");
   element.classList.toggle(
     "pool-art",
     Boolean(event.image) && (event.category === "operator" || event.category === "arsenal"),
   );
   if (event.backgroundType) element.dataset.backgroundType = event.backgroundType;
+  else delete element.dataset.backgroundType;
   element.style.setProperty("--event-color", event.color);
   element.style.setProperty("--event-image", event.image ? `url("${event.image}")` : "none");
 }
@@ -784,29 +791,35 @@ function updateVisibleEventContent() {
     const barStart = labelWidth + start * currentDayWidth;
     const barWidth = Math.max(duration * currentDayWidth, 20);
     const barEnd = barStart + barWidth;
-    const visibleStart = Math.max(barStart, viewStart);
     const visibleEnd = Math.min(barEnd, viewEnd);
+    if (visibleEnd <= Math.max(barStart, viewStart)) return;
 
+    const contentStart = barStart + bar.clientLeft;
+    const visibleStart = Math.max(contentStart, viewStart);
     if (visibleEnd <= visibleStart) return;
 
-    const hiddenLeft = Math.max(visibleStart - barStart, 0);
+    const hiddenLeft = visibleStart - contentStart;
     const visibleWidth = visibleEnd - visibleStart;
     const barHeight = bar.clientHeight;
     const characterArt = bar.classList.contains("pool-art") && bar.dataset.backgroundType !== "weapon";
     const bannerArt = bar.classList.contains("banner-art");
-    // 角色始终保留横幅局部构图，窄条允许只露眼睛，武器保持整体比例。
-    // 活动横幅使用完整原图比例和全部行高，不受装饰图片宽度上限限制。
+    // 为常驻及开放式日程末尾的箭头留出空间，横幅资源在图片区等比裁切。
+    const visualEnd = bannerArt && (state.event.permanent || state.event.endLabel)
+      ? Math.max(visibleStart, Math.min(visibleEnd, barEnd - 13))
+      : visibleEnd;
+    const visualRoom = visualEnd - visibleStart;
+    const bannerCopySpace = Math.min(112, visualRoom / 2);
+    const bannerWidthLimit = barHeight * (bar.classList.contains("tall-announcement-art") ? 4 : 5.5);
     const visualWidth = bannerArt
-      ? Math.min(visibleWidth * 0.52, barHeight * (bar.classList.contains("tall-announcement-art") ? 790 / 447 : 5.5))
+      ? Math.min(visualRoom - bannerCopySpace, bannerWidthLimit)
       : Math.min(visibleWidth * 0.38, characterArt
         ? Math.min(320, Math.max(160, barHeight * 4.8))
         : barHeight * (bar.classList.contains("pool-art") ? 2.8 : 3.2));
-    const visualInset = Math.min(
-      Math.max(visibleEnd - barStart - visualWidth, hiddenLeft),
-      Math.max(barWidth - visualWidth, 0),
-    );
+    const visualInset = visualEnd - contentStart - visualWidth;
     // 图片与文字各用独立区域，时长标签不再叠在横幅上。
-    const copyWidth = Math.max(0, visibleWidth - (state.image ? visualWidth + 6 : 0));
+    const copyWidth = state.image && visualWidth > 0
+      ? Math.max(0, visualInset - hiddenLeft - Math.min(6, visibleWidth * 0.08))
+      : visibleWidth;
     const labelLimit = Math.max(20, copyWidth * 0.35);
     const labelsCollapsed = copyWidth < 100;
     const remainingBadge = state.remainingBadge && !state.remainingBadge.hidden ? state.remainingBadge : null;

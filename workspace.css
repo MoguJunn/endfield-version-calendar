@@ -128,9 +128,9 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
 .event-bar.pool-art .event-art { display: none; }
 .event-bar.has-image:not(.pool-art) .event-image { background-image: linear-gradient(90deg, var(--event-color), transparent 30%, transparent 70%, var(--event-color)), var(--event-image); background-position: center; background-size: cover; opacity: .72; }
 .event-bar.has-image.banner-art .event-image {
-  background-image: linear-gradient(90deg, var(--event-color), transparent 22%), var(--event-image);
-  background-size: 100% 100%, contain;
-  background-position: right center;
+  background-image: var(--event-image);
+  background-size: cover;
+  background-position: var(--banner-position);
   background-repeat: no-repeat;
   mask-image: none;
   -webkit-mask-image: none;
@@ -141,8 +141,7 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
 .event-bar.banner-art::after { display: none; }
 .event-bar.banner-art .event-copy { background: linear-gradient(90deg, transparent 40%, rgb(0 0 0 / 16%)); }
 .event-bar.banner-art .event-copy strong, .event-bar.banner-art .event-copy small { text-shadow: 0 1px 3px rgb(0 0 0 / 65%); }
-.event-dialog.banner-art .dialog-visual { height: auto; aspect-ratio: 835 / 152; background-image: var(--event-image); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: var(--event-color); }
-.event-dialog.tall-announcement-art .dialog-visual { aspect-ratio: 790 / 447; }
+.event-dialog.banner-art .dialog-visual { height: auto; aspect-ratio: var(--banner-aspect); background-image: var(--event-image); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: var(--event-color); }
 .banner-art .event-art, .banner-art .dialog-visual b, .banner-art .agenda-visual b { display: none; }
 .event-bar::after { opacity: .055; }
 .event-bar.live::after { opacity: .1; animation: none; }
