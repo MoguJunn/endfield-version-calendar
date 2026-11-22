@@ -15,16 +15,25 @@ test("第八版正式活动覆盖导览旧条目并保留数据库卡池和公�
     id: "mushroom-war-echo", title: "战争回响常驻挑战玩法更新", start: versionEight.startsAt,
     end: versionEight.endsAt, image: "https://example.com/old-briefing.webp", sourceNote: "活动内容与持续时间正在施工中",
   };
+  const oldStoreEvents = [
+    ["mushroom-protocol-pass", "「协议通行证·蘑境」"],
+    ["mushroom-protocol-bundle", "「协议源流组合包」上架"],
+    ["mushroom-wild-bundle", "「漫野寻访组合包」上架"],
+    ["mushroom-arsenal-bundle", "「特惠武库配额包」上架"],
+  ].map(([id, title]) => ({ id, title, category: "limited", start: versionEight.startsAt, end: versionEight.endsAt }));
   const versions = mergeCalendarVersions([{
-    ...versionEight, pools: [pool], content: { activitiesComplete: false, events: [oldSeason] },
+    ...versionEight, pools: [pool], content: { activitiesComplete: false, events: [oldSeason, ...oldStoreEvents] },
   }]);
   const version = versions.find((item) => item.versionKey === versionEight.versionKey);
   const publicVersion = serializePublicVersion(version);
   assert.equal(publicVersion.activitiesComplete, true);
   assert.equal(publicVersion.sourceMeta.source, VERSION_EIGHT_ANNOUNCEMENT);
   const events = buildEventsForVersion(version);
-  assert.equal(events.length, 33);
-  assert.equal(new Set(events.map((event) => event.id)).size, events.length);
+  assert.equal(events.length, 29);
+  const eventIds = new Set(events.map((event) => event.id));
+  assert.equal(eventIds.size, events.length);
+  assert.ok(oldStoreEvents.every(({ id }) => !eventIds.has(id)));
+  assert.ok(eventIds.has("mushroom-marcher-gift"));
   assert.equal(events.find((event) => event.poolId === pool.poolId).end, pool.endsAt);
   for (const event of events.filter((item) => item.image)) {
     await access(new URL(`../${event.image}`, import.meta.url));
@@ -32,7 +41,7 @@ test("第八版正式活动覆盖导览旧条目并保留数据库卡池和公�
   }
 
   const restored = buildEventsForVersion({
-    ...publicVersion, pools: [], content: { resolvedPoolTimings: true, events: events.map((event) => serializePublicEvent(event)) },
+    ...publicVersion, pools: [], content: { resolvedPoolTimings: true, events: [...events, ...oldStoreEvents].map((event) => serializePublicEvent(event)) },
   });
   const eventDetails = (items) => items.map((event) => [event.id, event.start, event.end, event.sourceNote])
     .sort(([left], [right]) => left.localeCompare(right));
