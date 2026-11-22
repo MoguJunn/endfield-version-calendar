@@ -129,4 +129,39 @@
 - `mushroom-puzzle-special.webp`：密境行者特别篇。导览标为 2026-12-27 12:00 起长期开放。
 - `mushroom-war-echo.webp`：战争回响常驻挑战玩法更新。导览标为版本期间。
 
-日历将版本期间、版本更新后、版本更新维护前转换为第八版当前边界 `2026-11-25 12:00` 至 `2027-01-07 06:00`。具体日期直接采用导览内容，未公布的活动持续时间不推算。上述活动的详情和来源均标注“活动内容与持续时间正在施工中”，待官方活动公告发布后再逐项复核。
+以上是导览阶段的记录。11 月 22 日 18:00 发布的版本内容说明给出了新增活动、明确时间和横幅，现已替换导览数据与配图。
+
+## 第八版版本内容说明与横幅裁切（2026-11-22）
+
+三张官方原图的宽度均为 1000 像素。下方坐标使用左上原点，所有图片统一截取横向 `[101, 891)`，纵向按下列范围裁切。WebP 质量 90，保留裁切区域原始尺寸。 [官方动态](https://www.bilibili.com/opus/1273471549311025159)
+
+第一张原图高 11500 像素。 [原图第 1 张](https://i0.hdslb.com/bfs/new_dyn/42f471f1ef1fba0f658807bc6eb3d11d1265652806.jpg)
+
+- `[2236, 2387)` 照片横幅 `mushroom-story.webp`，蜜饼是我的祈愿。
+- `[3189, 3638)` 区域图 `mushroom-old-dam.webp`，武陵旧水坝。
+- `[4072, 4519)` `mushroom-pool-ceobe.webp`，锻砧、行囊与蜜糖。
+- `[5469, 5916)` `mushroom-pool-gilberta.webp`，致每一个飘游之愿。
+- `[6423, 6870)` `mushroom-pool-rossi.webp`，绯红瑰宝。
+- `[7904, 8351)` `mushroom-pool-sweet-deal.webp`，恣游申领。
+- `[8960, 9407)` `mushroom-pool-delivery.webp`，飘行申领。
+- `[9971, 10418)` `mushroom-pool-scarlet.webp`，赤獠申领。
+
+第二张原图高 10298 像素。 [原图第 2 张](https://i0.hdslb.com/bfs/new_dyn/37fa9c4ebe135702ae5b3b7cd0cb87161265652806.jpg)
+
+- `[2236, 2387)` `mushroom-array-construction.webp`，阵列建设与重建禁区共用。
+- `[3048, 3199)` `mushroom-fungi-intro.webp`，蘑菇！蕈类！真菌！
+- `[3643, 3794)` `mushroom-sanity.webp`，两期理智补给共用。
+- `[4280, 4431)` `mushroom-marcher-gift.webp`，行军者的报到。
+- `[4874, 5025)` `mushroom-lucky-turnip.webp`，“幸运萝卜”的妙趣游乐。
+- `[5650, 5801)` `mushroom-competition.webp`，方兴！竞技大会！
+- `[6385, 6536)` `mushroom-gift-sorting.webp`，分拣吧！管礼员。
+- `[6992, 7143)` `mushroom-war-echo.webp`，游离与警觉赛季共用。
+- `[8111, 8262)` `mushroom-monument-atrocity.webp`，暴君武装与丰碑揭示·暴虐共用。
+- `[9421, 9572)` `mushroom-puzzle-special.webp`，密境行者特别篇「菌类秘事」。
+
+第三张原图高 5455 像素。 [原图第 3 张](https://i0.hdslb.com/bfs/new_dyn/a8f08897645cfa1f84020434e052a9341265652806.jpg)
+
+- `[2171, 2322)` `mushroom-bundles.webp`，三项限时组合包共用。
+- `[4102, 4253)` `mushroom-protocol-pass.webp`，协议通行证·蘑境。
+
+社区时间轴 Ver. 26.11.22a 用于交叉核对赛季、跨版武库和内容更新节点。图中下版预热签到的开始时间为 `??`，日历仅保留待官方公布的版末占位。 [社区时间轴](https://i0.hdslb.com/bfs/new_dyn/27a652c4247b4bc6e62f53d8322358238412516.png)

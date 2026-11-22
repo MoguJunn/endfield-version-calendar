@@ -104,7 +104,7 @@ const assertions = [
   [html.includes('id="versionEndDate"') && html.includes('id="versionEndTime"'), "版本收束时间未接入动态节点"],
   [appJs.includes('CALENDAR_EVENTS_API = "/api/v1/events"') && appJs.includes("fetchPublicCalendar"), "页面未优先接入站内公开活动 API"],
   [appJs.includes("cancelAnimationFrame(eventViewportFrame)") && !appJs.includes("redrawAfterDatabaseSync"), "时间轴同步仍可能遗留旧定位帧或重复重绘"],
-  [calendarCore.includes("image: event.image || localEvent.image || null"), "远端空图片字段仍可能覆盖仓库活动海报"],
+  [calendarCore.includes("event.image || localEvent.image || null"), "远端空图片字段仍可能覆盖仓库活动海报"],
   [apiHandler.includes('Access-Control-Allow-Origin", "*"') && apiHandler.includes('apiVersion: "1"'), "公开活动 API 缺少开放 CORS 或稳定版本契约"],
   [apiHandler.includes("s-maxage=60") && apiHandler.includes("stale-while-revalidate=300"), "公开活动 API 缺少短期 CDN 缓存策略"],
   [apiHandler.includes("RATE_LIMITED") && apiHandler.includes("Retry-After") && rateLimit.includes("DEFAULT_RATE_LIMIT_MAX = 60"), "公开活动 API 缺少基础限速保护"],
