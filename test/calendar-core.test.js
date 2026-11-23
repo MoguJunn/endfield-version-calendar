@@ -9,20 +9,47 @@ import {
   fallbackVersion,
   fallbackVersions,
   filterEvents,
+  mergeCalendarVersions,
   normalizeEvents,
   poolColorTheme,
   rawEvents,
   serializePublicEvent,
+  serializePublicVersion,
   statusOf,
 } from "../lib/calendar-core.js";
 
-test("本地回退包含八个版本及第五版历史活动", () => {
+test("本地回退包含八个版本及各版活动来源", () => {
   assert.equal(fallbackVersions.length, 8);
   assert.equal(fallbackVersions.at(-1).versionKey, "version-8");
-  assert.equal(rawEvents.length, 21);
+  assert.equal(rawEvents.length, 30);
   assert.ok(rawEvents.some((event) => event.id === "secret-realm-update"));
   assert.equal(fallbackVersion.sourceMeta.source, OFFICIAL_VERSION_CALENDAR_SOURCE);
   assert.equal(fallbackVersion.sourceMeta.author, "明日方舟：终末地官方");
+  assert.ok(fallbackVersions.every((version) => version.content.activitiesComplete && /^https:\/\//u.test(version.sourceMeta.source)));
+});
+
+test("历史活动经公开 API 恢复并保留跨版本期限及官方日期修订", () => {
+  const remote = fallbackVersions.slice(0, 5).map((version) => ({
+    ...version, sourceMeta: {}, content: { activitiesComplete: false, events: [] },
+  }));
+  remote[4].content.events.push({ id: "next-version-warmup", title: "新版本预热签到活动", start: "2026-08-28T04:00:00+08:00", startUnknown: true });
+  const versions = mergeCalendarVersions(remote);
+  const events = buildSeamlessEvents(versions);
+  const restoredVersions = versions.map((version) => ({ ...serializePublicVersion(version), content: {
+    resolvedPoolTimings: true,
+    events: events.filter((event) => event.versionKey === version.versionKey).map((event) => serializePublicEvent(event)),
+  } }));
+  const restored = new Map(buildSeamlessEvents(mergeCalendarVersions(restoredVersions)).map((event) => [event.id, event]));
+  assert.equal(restored.get("launch-monument-inorganic").start, "2026-02-22T12:00:00+08:00");
+  assert.equal(restored.get("launch-awakening-signin").end, null);
+  assert.equal(restored.get("tide-survival-training").end, "2026-04-30T04:00:00+08:00");
+  assert.equal(restored.get("spring-rescue-exchange").end, "2026-05-19T04:00:00+08:00");
+  assert.equal(restored.get("heirloom-crisis-shop").end, "2026-07-23T04:00:00+08:00");
+  assert.equal(restored.get("next-version-warmup").start, "2026-08-26T12:00:00+08:00");
+  assert.equal(restored.get("next-version-warmup").startUnknown, false);
+  assert.match(restored.get("roots-update").startLabel, /时刻未公布/u);
+  assert.equal(restored.get("bubble-support-exchange").end, "2026-10-07T04:00:00+08:00");
+  assert.equal(restored.get("danqing-minghe-trial").end, "2026-11-25T06:00:00+08:00");
 });
 
 test("官方视觉调整不改变公开活动分类标识", () => {

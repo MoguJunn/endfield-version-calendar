@@ -10,10 +10,10 @@ const fixtureCalendar = {
   warnings: [],
   versions: [{
     versionKey: "version-1", versionNumber: "1", title: "测试版本",
-    startsAt: "2026-01-01T00:00:00Z", endsAt: "2026-02-01T00:00:00Z",
+    startsAt: "2026-01-01T00:00:00Z", endsAt: "2026-01-21T00:00:00Z",
     content: { activitiesComplete: true, events: [
       { id: "live", category: "limited", title: "进行中", start: "2026-01-10T00:00:00Z", end: "2026-01-20T00:00:00Z", image: "./assets/live.png", user_id: "private-user", description: "" },
-      { id: "future", category: "operator", title: "将来", start: "2026-01-25T00:00:00Z", end: "2026-01-30T00:00:00Z", description: "" },
+      { id: "future", category: "operator", title: "将来", start: "2026-01-18T00:00:00Z", end: "2026-01-20T00:00:00Z", description: "" },
     ] },
     pools: [], poolNames: {},
   }],

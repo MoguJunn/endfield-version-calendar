@@ -27,9 +27,9 @@ test("第八版正式活动覆盖导览旧条目并保留数据库卡池和公�
   const version = versions.find((item) => item.versionKey === versionEight.versionKey);
   const publicVersion = serializePublicVersion(version);
   assert.equal(publicVersion.activitiesComplete, true);
-  assert.equal(publicVersion.sourceMeta.source, VERSION_EIGHT_ANNOUNCEMENT);
+  assert.equal(publicVersion.sourceMeta.source, "https://www.bilibili.com/opus/1273842634518953988");
   const events = buildEventsForVersion(version);
-  assert.equal(events.length, 29);
+  assert.equal(events.length, 32);
   const eventIds = new Set(events.map((event) => event.id));
   assert.equal(eventIds.size, events.length);
   assert.ok(oldStoreEvents.every(({ id }) => !eventIds.has(id)));
@@ -61,8 +61,11 @@ test("公告的赛季轮换、补给、更新节点和长期开放分别绘制",
   assert.equal(events.get("mushroom-war-echo-alert").start, "2026-12-16T12:00:00+08:00");
   assert.equal(events.get("mushroom-sanity-first").end, "2026-12-16T04:00:00+08:00");
   assert.equal(events.get("mushroom-sanity-second").end, "2027-01-07T04:00:00+08:00");
+  assert.equal(events.get("mushroom-ceobe-signin").end, "2026-12-23T11:59:00+08:00");
+  assert.equal(events.get("mushroom-ceobe-trial").end, "2026-12-23T11:59:00+08:00");
+  assert.equal(events.get("mushroom-monument-atrocity-update").overlayFor, "mushroom-monument-atrocity");
   assert.deepEqual([...events.values()].filter((event) => event.milestone).map((event) => event.start).sort(), [
-    "2026-12-09T04:00:00+08:00", "2026-12-18T04:00:00+08:00", "2026-12-23T04:00:00+08:00",
+    "2026-12-09T04:00:00+08:00", "2026-12-09T04:00:00+08:00", "2026-12-18T04:00:00+08:00", "2026-12-23T04:00:00+08:00",
   ]);
   const warmup = events.get("mushroom-next-version-warmup");
   assert.equal(warmup.startUnknown, true);

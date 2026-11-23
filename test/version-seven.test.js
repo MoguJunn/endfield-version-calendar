@@ -9,8 +9,8 @@ test("丹青渡空远端快照补齐日程与来源，更新标记均有对应�
   const version = merged.find((item) => item.versionKey === versionSeven.versionKey);
   assert.equal(version.content.activitiesComplete, true);
   const events = buildEventsForVersion(version);
-  assert.equal(events.length, 27);
-  assert.equal(new Set(events.map((event) => event.id)).size, 27);
+  assert.equal(events.length, 32);
+  assert.equal(new Set(events.map((event) => event.id)).size, events.length);
   for (const event of events) {
     assert.ok(Number.isFinite(event.startDate.getTime()));
     if (event.endDate) assert.ok(event.endDate > event.startDate);

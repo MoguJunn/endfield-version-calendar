@@ -24,7 +24,6 @@ import {
   stableStringHash,
   statusOf,
 } from "./lib/calendar-core.js";
-import { DANQING_UPDATE_SOURCE } from "./lib/version-seven.js";
 import { versionEight } from "./lib/version-eight.js";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -188,7 +187,7 @@ function statusText(event, now) {
   if (event.milestone) {
     return status === "upcoming"
       ? `内容更新 · ${formatRelative(event.startDate - now)}后`
-      : `已于 ${fullDateFormatter.format(event.startDate)} 更新`;
+      : `已于 ${eventStartText(event)} 更新`;
   }
   if (status === "upcoming") return `即将开始 · ${formatRelative(event.startDate - now)}`;
   if (status === "ended") return "已结束";
@@ -198,12 +197,13 @@ function statusText(event, now) {
 }
 
 function eventStartText(event) {
-  if (event.startUnknown) return event.startLabel;
+  if (event.startUnknown || (event.milestone && event.startLabel)) return event.startLabel;
   return fullDateFormatter.format(event.startDate);
 }
 
 function eventStartShortText(event) {
   if (event.startUnknown) return "待公布";
+  if (event.milestone && event.startLabel) return event.startLabel;
   return beijingDateFormatter.format(event.startDate);
 }
 
@@ -249,13 +249,10 @@ function eventRemainingText(event, now = new Date()) {
 function applyEventVisual(element, event) {
   element.dataset.visual = event.visual ?? event.category;
   element.classList.toggle("has-image", Boolean(event.image));
-  const artwork = event.image?.match(/\/assets\/events\/((?:danqing|winter|pool|mushroom)-[^/]+)\.webp$/u)?.[1];
+  const artwork = event.image?.match(/\/assets\/events\/((?:danqing|winter|pool|mushroom|history)-[^/]+)\.webp$/u)?.[1];
   const tallArtwork = artwork?.startsWith("mushroom-pool-") || artwork === "mushroom-old-dam";
   element.classList.toggle("banner-art", Boolean(artwork));
   element.classList.toggle("tall-announcement-art", tallArtwork);
-  element.style.setProperty("--banner-aspect", tallArtwork
-    ? `781 / ${artwork === "mushroom-old-dam" ? 440 : 438}`
-    : "5.5");
   element.style.setProperty("--banner-position", tallArtwork
     ? `${event.category === "operator" ? "28%" : "50%"} 40%`
     : "center");
@@ -646,7 +643,17 @@ function openEventDialog(event) {
   const now = new Date();
   elements.eventDialog.style.setProperty("--dialog-color", event.color);
   applyEventVisual(elements.eventDialog, event);
-  document.querySelector("#dialogVisual").innerHTML = `<b>${event.symbol ?? "◇"}</b>`;
+  const dialogVisual = document.querySelector("#dialogVisual");
+  if (elements.eventDialog.classList.contains("banner-art")) {
+    const image = document.createElement("img");
+    image.src = event.image;
+    image.alt = "";
+    dialogVisual.replaceChildren(image);
+  } else {
+    const symbol = document.createElement("b");
+    symbol.textContent = event.symbol ?? "◇";
+    dialogVisual.replaceChildren(symbol);
+  }
   document.querySelector("#dialogCategory").textContent = `${category.name} / ${category.en}`;
   document.querySelector("#dialogTitle").textContent = event.title;
   const related = document.querySelector("#dialogRelated");
@@ -1454,16 +1461,17 @@ function updateVersionMetadata() {
   elements.heroWatermark.textContent = String(currentVersion.versionKey || title).replace(/[^a-z0-9]+/giu, " ").trim().toUpperCase();
   elements.activityNotice.hidden = activitiesComplete;
   elements.activityNotice.querySelector("strong").textContent = "历史活动整理中";
-  elements.sourceCredit.hidden = !mushroom && !danqing && currentVersion.versionKey !== fallbackVersion.versionKey;
-  elements.sourceCredit.href = mushroom ? versionEight.sourceMeta.source : danqing ? DANQING_UPDATE_SOURCE : fallbackVersion.sourceMeta.source;
-  elements.sourceCredit.querySelector("span").textContent = mushroom || danqing ? "官方版本说明 / OFFICIAL SOURCE" : "官方日历 / OFFICIAL SOURCE";
-  elements.sourceCredit.querySelector("strong").textContent = mushroom ? `明日方舟：终末地官方 ·「${title}」版本内容说明`
-    : danqing ? "明日方舟：终末地官方 ·「丹青渡」版本更新说明" : "明日方舟：终末地官方 ·「向渊行」版本日历";
-  elements.sourceCredit.querySelector("em").textContent = mushroom || danqing ? "查看官方活动时间与说明 ↗" : "查看官方公告与原图 ↗";
+  const source = fallbackVersions.find((version) => version.versionKey === currentVersion.versionKey)?.sourceMeta?.source;
+  const sourceLabel = `明日方舟：终末地官方 ·「${title}」版本日历`;
+  elements.sourceCredit.hidden = !source;
+  elements.sourceCredit.href = source || "#";
+  elements.sourceCredit.querySelector("span").textContent = "官方日历 / OFFICIAL SOURCE";
+  elements.sourceCredit.querySelector("strong").textContent = sourceLabel;
+  elements.sourceCredit.querySelector("em").textContent = "查看官方公告与原图 ↗";
   const infoSource = document.querySelector("#calendarInfoSource");
   infoSource.hidden = elements.sourceCredit.hidden;
   infoSource.href = elements.sourceCredit.href;
-  infoSource.textContent = `${elements.sourceCredit.querySelector("strong").textContent} ↗`;
+  infoSource.textContent = `${sourceLabel} ↗`;
   elements.calendarNote.textContent = activitiesComplete
     ? `页面依据「${title}」版本数据库与已核对活动资料整理；常驻活动条在下一版本分割线收束，仅表示展示范围，内容仍常驻开放。若时间不一致，请以官方公告和游戏内实际时间为准。`
     : `「${title}」历史版本的角色与武器卡池已从主站数据库载入，其他活动仍待补充；跨版本卡池会在无缝总轴中连续展示。`;
