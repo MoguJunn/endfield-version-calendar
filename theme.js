@@ -7,6 +7,18 @@
     light: { label: "亮色", icon: "☀" },
     dark: { label: "暗色", icon: "☾" },
   };
+  // 脚本在样式表加载前执行，浏览器栏颜色与 styles.css 的 --bg 对齐。
+  const DEFAULT_COLORS = { light: "#eef0ec", dark: "#101310" };
+  const VERSION_COLORS = new Map([
+    ["launch", { light: "#eef0ed", dark: "#191a13" }],
+    ["tide", { light: "#f6eeea", dark: "#211311" }],
+    ["spring", { light: "#eef4e7", dark: "#132018" }],
+    ["heirloom", { light: "#f4edef", dark: "#1e131b" }],
+    ["homecoming", { light: "#edeff1", dark: "#14171c" }],
+    ["snow", { light: "#edf3fc", dark: "#0d1426" }],
+    ["danqing", { light: "#f4efdf", dark: "#171610" }],
+    ["mushroom", { light: "#fff8e9", dark: "#1b1524" }],
+  ]);
   const media = window.matchMedia("(prefers-color-scheme: dark)");
 
   function readMode() {
@@ -58,10 +70,8 @@
     document.documentElement.style.colorScheme = resolved;
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      const palette = document.documentElement.dataset.versionTheme;
-      themeColor.content = resolved === "dark"
-        ? (palette === "mushroom" ? "#1b1524" : palette === "danqing" ? "#171610" : palette === "snow" ? "#0d1426" : "#101310")
-        : (palette === "mushroom" ? "#fff8e9" : palette === "danqing" ? "#f4efdf" : palette === "snow" ? "#edf3fc" : "#eef0ec");
+      const colors = VERSION_COLORS.get(document.documentElement.dataset.versionTheme) ?? DEFAULT_COLORS;
+      themeColor.content = colors[resolved];
     }
     updateControls();
   }

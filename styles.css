@@ -52,6 +52,151 @@
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
+/* 零号委托：官方日历的银灰、石墨与亮黄。 */
+:root[data-version-theme="launch"] {
+  --bg: #eef0ed;
+  --surface: #f8f9f5;
+  --surface-strong: #ffffff;
+  --ink: #24251d;
+  --muted: #606257;
+  --line: rgba(60, 61, 49, 0.16);
+  --line-strong: rgba(60, 61, 49, 0.34);
+  --accent: #f5f23c;
+  --accent-strong: #616200;
+  --accent-rgb: 245, 242, 60;
+  --hero-background: linear-gradient(115deg, #181a16 0%, #33362b 60%, #595935 100%);
+  --category-background: #24261d;
+  --shadow: 0 18px 48px rgba(51, 52, 31, 0.12);
+}
+
+:root[data-version-theme="launch"][data-theme="dark"] {
+  --bg: #191a13;
+  --surface: #222419;
+  --surface-strong: #2b2d20;
+  --ink: #f6f6e8;
+  --muted: #bdbfac;
+  --line: rgba(218, 220, 185, 0.15);
+  --line-strong: rgba(218, 220, 185, 0.32);
+  --accent-strong: #f5f23c;
+  --shadow: 0 20px 60px rgba(9, 10, 5, 0.36);
+}
+
+/* 新潮起，故渊离：官方日历的朱红页头与暖白底。 */
+:root[data-version-theme="tide"] {
+  --bg: #f6eeea;
+  --surface: #fdf8f5;
+  --surface-strong: #ffffff;
+  --ink: #32201c;
+  --muted: #755b54;
+  --line: rgba(139, 55, 40, 0.16);
+  --line-strong: rgba(139, 55, 40, 0.34);
+  --accent: #ffb19e;
+  --accent-strong: #a42b21;
+  --accent-rgb: 255, 177, 158;
+  --hero-background: linear-gradient(115deg, #2a100c 0%, #590f0c 55%, #852520 100%);
+  --category-background: #391714;
+  --shadow: 0 18px 48px rgba(100, 37, 24, 0.13);
+}
+
+:root[data-version-theme="tide"][data-theme="dark"] {
+  --bg: #211311;
+  --surface: #2c1b17;
+  --surface-strong: #38211d;
+  --ink: #fff0e9;
+  --muted: #d0afa5;
+  --line: rgba(239, 170, 151, 0.16);
+  --line-strong: rgba(239, 170, 151, 0.34);
+  --accent-strong: #ff9e8d;
+  --shadow: 0 20px 60px rgba(15, 4, 2, 0.37);
+}
+
+/* 春晓时：官方日历的嫩绿与灰绿。 */
+:root[data-version-theme="spring"] {
+  --bg: #eef4e7;
+  --surface: #f7faef;
+  --surface-strong: #ffffff;
+  --ink: #223320;
+  --muted: #55664c;
+  --line: rgba(74, 107, 53, 0.16);
+  --line-strong: rgba(74, 107, 53, 0.34);
+  --accent: #cde7a7;
+  --accent-strong: #43692d;
+  --accent-rgb: 205, 231, 167;
+  --hero-background: linear-gradient(115deg, #17271e 0%, #2d4330 56%, #4d6238 100%);
+  --category-background: #233527;
+  --shadow: 0 18px 48px rgba(53, 78, 37, 0.12);
+}
+
+:root[data-version-theme="spring"][data-theme="dark"] {
+  --bg: #132018;
+  --surface: #1b2b20;
+  --surface-strong: #233629;
+  --ink: #eef6e8;
+  --muted: #b1c6a8;
+  --line: rgba(189, 220, 160, 0.16);
+  --line-strong: rgba(189, 220, 160, 0.32);
+  --accent-strong: #cde7a7;
+  --shadow: 0 20px 60px rgba(4, 14, 8, 0.36);
+}
+
+/* 寻遗散记：官方日历的酒红、玫瑰灰与深墨。 */
+:root[data-version-theme="heirloom"] {
+  --bg: #f4edef;
+  --surface: #fcf7f8;
+  --surface-strong: #ffffff;
+  --ink: #331f2a;
+  --muted: #765865;
+  --line: rgba(130, 51, 79, 0.17);
+  --line-strong: rgba(130, 51, 79, 0.35);
+  --accent: #e9bdca;
+  --accent-strong: #84213d;
+  --accent-rgb: 233, 189, 202;
+  --hero-background: linear-gradient(115deg, #21151b 0%, #431c2d 54%, #70273d 100%);
+  --category-background: #301b25;
+  --shadow: 0 18px 48px rgba(96, 43, 65, 0.13);
+}
+
+:root[data-version-theme="heirloom"][data-theme="dark"] {
+  --bg: #1e131b;
+  --surface: #291d26;
+  --surface-strong: #362632;
+  --ink: #faedf3;
+  --muted: #ceb1c0;
+  --line: rgba(215, 165, 187, 0.17);
+  --line-strong: rgba(215, 165, 187, 0.34);
+  --accent-strong: #efaac1;
+  --shadow: 0 20px 60px rgba(13, 5, 11, 0.37);
+}
+
+/* 向渊行：官方日历的石墨黑、雾银与警示红。 */
+:root[data-version-theme="homecoming"] {
+  --bg: #edeff1;
+  --surface: #f7f8fa;
+  --surface-strong: #ffffff;
+  --ink: #21252c;
+  --muted: #5b616c;
+  --line: rgba(61, 68, 79, 0.16);
+  --line-strong: rgba(61, 68, 79, 0.34);
+  --accent: #ced5df;
+  --accent-strong: #a52b35;
+  --accent-rgb: 206, 213, 223;
+  --hero-background: linear-gradient(115deg, #15171b 0%, #2e3137 56%, #4d4e56 100%);
+  --category-background: #25282f;
+  --shadow: 0 18px 48px rgba(46, 51, 61, 0.12);
+}
+
+:root[data-version-theme="homecoming"][data-theme="dark"] {
+  --bg: #14171c;
+  --surface: #1d222a;
+  --surface-strong: #262c36;
+  --ink: #f0f3f8;
+  --muted: #b4bcc9;
+  --line: rgba(191, 201, 218, 0.15);
+  --line-strong: rgba(191, 201, 218, 0.32);
+  --accent-strong: #ff9da5;
+  --shadow: 0 20px 60px rgba(4, 7, 13, 0.36);
+}
+
 /* 雪凇幽梦：冰蓝强调色与淡紫底色，随所选版本切换。 */
 :root[data-version-theme="snow"] {
   --bg: #edf3fc;
@@ -62,7 +207,7 @@
   --line: rgba(45, 70, 118, 0.15);
   --line-strong: rgba(45, 70, 118, 0.32);
   --accent: #9fdaff;
-  --accent-strong: #3675b8;
+  --accent-strong: #306bad;
   --accent-rgb: 159, 218, 255;
   --hero-background: linear-gradient(115deg, #0c1738 0%, #233b70 52%, #65549a 100%);
   --category-background: #101d38;
@@ -308,7 +453,7 @@ footer {
 
 .topbar {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   min-height: 86px;
   display: flex;
   align-items: center;

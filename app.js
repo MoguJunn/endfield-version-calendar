@@ -24,11 +24,20 @@ import {
   stableStringHash,
   statusOf,
 } from "./lib/calendar-core.js";
-import { versionEight } from "./lib/version-eight.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 const CALENDAR_EVENTS_API = "/api/v1/events";
 const CALENDAR_SITE_CONFIG = window.ENDFIELD_CALENDAR_CONFIG || {};
+const versionThemes = new Map([
+  ["version-1", "launch"],
+  ["version-2", "tide"],
+  ["version-3", "spring"],
+  ["version-4", "heirloom"],
+  ["version-5", "homecoming"],
+  ["version-6", "snow"],
+  ["version-7", "danqing"],
+  ["version-8", "mushroom"],
+]);
 let timelineStart = new Date("2026-07-16T12:00:00+08:00");
 let timelineEnd = new Date("2026-09-02T06:00:00+08:00");
 let totalDays = Math.ceil((timelineEnd - timelineStart) / DAY);
@@ -1439,12 +1448,7 @@ function renderVersionSwitcher() {
 function updateVersionMetadata() {
   const title = currentVersion.title || "未命名版本";
   const versionNumber = currentVersion.versionNumber || "?";
-  const mushroom = currentVersion.versionKey === versionEight.versionKey || String(versionNumber) === "8";
-  const danqing = currentVersion.versionKey === "version-7";
-  // 配色绑定具体版本，避免新版本继续沿用上一版的主题。
-  document.documentElement.dataset.versionTheme = mushroom
-    ? "mushroom" : danqing || title.includes("丹青渡")
-      ? "danqing" : currentVersion.versionKey === "version-6" ? "snow" : "default";
+  document.documentElement.dataset.versionTheme = versionThemes.get(currentVersion.versionKey) ?? "launch";
   document.dispatchEvent(new Event("versionthemechange"));
   const selectedStart = new Date(currentVersion.startsAt || timelineStart);
   const selectedEnd = new Date(currentVersion.endsAt || timelineEnd);
@@ -1475,8 +1479,6 @@ function updateVersionMetadata() {
   elements.calendarNote.textContent = activitiesComplete
     ? `页面依据「${title}」版本数据库与已核对活动资料整理；常驻活动条在下一版本分割线收束，仅表示展示范围，内容仍常驻开放。若时间不一致，请以官方公告和游戏内实际时间为准。`
     : `「${title}」历史版本的角色与武器卡池已从主站数据库载入，其他活动仍待补充；跨版本卡池会在无缝总轴中连续展示。`;
-  document.title = `「${title}」Version ${versionNumber} 实时日历`;
-  document.querySelector('meta[name="description"]').content = `《明日方舟：终末地》Version ${versionNumber}「${title}」活动实时日历与时间轴`;
 }
 
 function selectVersion(versionKey, { scroll = true, fit = true } = {}) {
@@ -1747,6 +1749,13 @@ function init() {
     if (event.target !== elements.timelineScroll || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
     event.preventDefault();
     browseTimeline(event.key === "ArrowRight" ? 1 : -1);
+  });
+  const languagePicker = document.querySelector(".language-picker");
+  document.addEventListener("click", (event) => {
+    if (languagePicker.open && !languagePicker.contains(event.target)) languagePicker.open = false;
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && languagePicker.open) languagePicker.open = false;
   });
   const infoDialog = document.querySelector("#calendarInfoDialog");
   document.querySelector("#calendarInfo").addEventListener("click", () => infoDialog.showModal());

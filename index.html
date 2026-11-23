@@ -1,14 +1,31 @@
 <!doctype html>
-<html lang="zh-CN" data-version-theme="danqing">
+<html lang="zh-CN" data-version-theme="launch">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f4efdf" />
+    <meta name="theme-color" content="#eef0ed" />
     <meta
       name="description"
-      content="《明日方舟：终末地》「丹青渡」版本活动实时日历与时间轴"
+      content="《明日方舟：终末地》版本日历，按北京时间查询当前及历代版本的活动、干员寻访、武库申领与内容更新时间。"
     />
-    <title>「丹青渡」版本实时日历</title>
+    <title>明日方舟：终末地版本日历</title>
+    <link rel="canonical" href="https://ef-cal.mogujun.icu/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="明日方舟：终末地版本日历" />
+    <meta property="og:title" content="明日方舟：终末地版本日历" />
+    <meta property="og:description" content="《明日方舟：终末地》版本日历，按北京时间查询当前及历代版本的活动、干员寻访、武库申领与内容更新时间。" />
+    <meta property="og:url" content="https://ef-cal.mogujun.icu/" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "明日方舟：终末地版本日历",
+        "alternateName": "终末地版本日历",
+        "url": "https://ef-cal.mogujun.icu/",
+        "inLanguage": "zh-CN"
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%23262b28'/%3E%3Cpath d='M7 8h18v17H7zM7 13h18M12 6v5M20 6v5' fill='none' stroke='%23dcca87' stroke-width='2'/%3E%3C/svg%3E" />
     <script src="./theme.js"></script>
     <link rel="stylesheet" href="./styles.css" />
@@ -26,11 +43,8 @@
 
         <nav class="topbar" aria-label="页面导航">
           <a class="brand" href="#top" aria-label="终末地版本日历首页">
-            <span class="brand-mark">EF</span>
-            <span>
-              <strong>ENDFIELD</strong>
-              <small>VERSION CALENDAR</small>
-            </span>
+            <span class="brand-mark" aria-hidden="true">终</span>
+            <strong>终末地版本日历</strong>
           </a>
           <div class="topbar-actions">
             <button class="workspace-info-button" id="calendarInfo" type="button">日程与说明</button>
@@ -53,6 +67,13 @@
               ><strong>API 文档</strong><span>PUBLIC API →</span></a>
             </div>
             <span class="sync-state" id="syncState"><i></i><span>正在连接主站数据</span></span>
+            <details class="language-picker">
+              <summary>语言</summary>
+              <ul class="language-options">
+                <li><span>简体中文</span><small>当前语言</small></li>
+                <li><span lang="en">English</span><small>本地化施工中</small></li>
+              </ul>
+            </details>
             <div class="theme-picker" data-theme-picker>
               <button
                 class="theme-trigger"

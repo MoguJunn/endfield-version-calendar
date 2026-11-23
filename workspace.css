@@ -6,10 +6,9 @@ html, body { height: 100%; overflow: hidden; }
 .hero { flex: 0 0 auto; min-height: 0; overflow: visible; margin: 0 -18px; padding: 0 24px; border-bottom: 1px solid var(--line-strong); }
 .hero::before, .hero::after, .hero-grid, .hero-scanline, .hero-signal, .hero-orbit, .hero-watermark { display: none; }
 .topbar { min-height: 40px; gap: 16px; padding: 0; align-items: center; border-bottom: 1px solid rgba(255,255,255,.12); }
-.brand { gap: 9px; }
+.brand { flex: 0 0 auto; gap: 9px; }
 .brand-mark { width: 25px; height: 25px; font-size: 12px; }
-.brand strong { font-size: 11px; letter-spacing: .18em; }
-.brand small { font-size: 7px; margin-top: 3px; }
+.brand strong { font-size: 11px; letter-spacing: .04em; }
 .topbar-actions { gap: 12px; flex-direction: row; align-items: center; }
 .project-links { gap: 5px; }
 .project-links a { display: block; min-width: 0; padding: 6px 10px; box-shadow: none; border: 0; background: transparent !important; }
@@ -19,6 +18,15 @@ html, body { height: 100%; overflow: hidden; }
 .theme-trigger { width: 28px; height: 28px; font-size: 14px; }
 .workspace-info-button { border: 0; padding: 6px 10px; background: transparent; color: inherit; font-size: 11px; cursor: pointer; }
 .workspace-info-button:hover { background: rgba(255,255,255,.1); }
+.language-picker { position: relative; flex: 0 0 auto; font-size: 11px; }
+.language-picker summary { list-style: none; padding: 6px; cursor: pointer; }
+.language-picker summary::-webkit-details-marker { display: none; }
+.language-picker summary::after { content: "▾"; margin-left: 3px; }
+.language-picker summary:hover, .language-picker[open] summary { background: rgba(255,255,255,.1); }
+.language-picker summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.language-options { position: absolute; z-index: 30; right: 0; top: calc(100% + 5px); min-width: 156px; margin: 0; padding: 6px 8px; list-style: none; border: 1px solid var(--line-strong); background: var(--surface-strong); color: var(--ink); box-shadow: var(--shadow); }
+.language-options li { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; white-space: nowrap; }
+.language-options small { color: var(--muted); font-size: 10px; }
 .hero-content { grid-template-columns: minmax(0,1fr) 340px; align-items: center; gap: 20px; padding: 10px 0 12px; }
 .hero-copy { display: grid; grid-template-columns: auto auto minmax(0,1fr); align-items: center; column-gap: 14px; row-gap: 5px; animation: none; }
 .eyebrow { grid-column: 1; grid-row: 1; letter-spacing: .06em; font-size: 9px; }
@@ -207,8 +215,7 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
   .hero { margin-inline: -58px; padding-inline: 64px; }
   .topbar { min-height: clamp(44px, 2.5vw, 64px); }
   .brand strong { font-size: clamp(12px, .7vw, 18px); }
-  .brand small { font-size: clamp(8px, .45vw, 12px); }
-  .project-links a strong, .workspace-info-button { font-size: clamp(12px, .7vw, 18px); }
+  .project-links a strong, .workspace-info-button, .language-picker { font-size: clamp(12px, .7vw, 18px); }
   .sync-state { font-size: clamp(11px, .6vw, 16px); }
   .hero-content { grid-template-columns: minmax(0, 1fr) clamp(380px, 27vw, 680px); padding-block: 12px; }
   .hero h1 { font-size: clamp(32px, 1.8vw, 52px); }
@@ -264,7 +271,8 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
   :root { --label-width: 72px; }
   .hero { padding: 0 10px; }
   .topbar { display: flex; min-height: 40px; gap: 6px; }
-  .brand > span:not(.brand-mark) { display: none; }
+  .brand-mark { display: none; }
+  .brand strong { font-size: 10px; white-space: nowrap; }
   .topbar-actions { gap: 3px; }
   .project-links { flex: 0 1 auto; }
   .project-links a { flex: none; padding: 5px 7px; }
@@ -272,6 +280,7 @@ main { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; paddin
   .project-links .project-link-github { display: none; }
   .project-links .project-link-api { display: block; }
   .workspace-info-button { padding: 5px 6px; font-size: 10px; }
+  .language-picker { font-size: 10px; }
   .hero-content { grid-template-columns: 1fr; gap: 8px; padding: 8px 0; }
   .hero-copy { column-gap: 10px; row-gap: 3px; }
   .hero-copy { grid-template-columns: auto minmax(0,1fr); }
